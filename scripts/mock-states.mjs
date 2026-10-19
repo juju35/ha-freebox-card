@@ -1,0 +1,72 @@
+// Mock Home Assistant states, entity registry and device registry shaped like the Freebox integration,
+// used to render screenshots.
+const ROUTER = "dev_router";
+const DISK = "dev_disk";
+const ENTRY = "entry_freebox";
+const boot = new Date(Date.now() - (10 * 86400 + 12 * 3600 + 49 * 60) * 1000).toISOString().slice(0, 19);
+
+export const devices = {
+  [ROUTER]: {
+    id: ROUTER,
+    name: "Freebox v9 (r1)",
+    model: "Freebox v9 (r1)",
+    model_id: "fbxgw9-r1",
+    sw_version: "4.13.1",
+    config_entries: [ENTRY],
+  },
+  [DISK]: { id: DISK, name: "Disk 1000", model: "Samsung SSD 990 PRO 1TB", via_device_id: ROUTER, config_entries: [ENTRY] },
+};
+
+// [entity id, device, translation key, state, attributes]
+const raw = [
+  ["sensor.freebox_download_speed", ROUTER, "rate_down", "48475.2", { unit_of_measurement: "kB/s", device_class: "data_rate" }, "Download speed"],
+  ["sensor.freebox_upload_speed", ROUTER, "rate_up", "2348.75", { unit_of_measurement: "kB/s", device_class: "data_rate" }, "Upload speed"],
+  ["sensor.freebox_missed_calls", ROUTER, "missed", "2", { unit_of_measurement: "calls" }, "Missed calls"],
+  ["switch.freebox_wifi", ROUTER, "wifi", "on", {}, "Wi-Fi"],
+  ["sensor.freebox_temperature_cpu_0", ROUTER, null, "59", { unit_of_measurement: "°C", device_class: "temperature" }, "Température CPU 0"],
+  ["sensor.freebox_temperature_cpu_1", ROUTER, null, "57", { unit_of_measurement: "°C", device_class: "temperature" }, "Température CPU 1"],
+  ["sensor.freebox_temperature_cpu_2", ROUTER, null, "59", { unit_of_measurement: "°C", device_class: "temperature" }, "Température CPU 2"],
+  ["sensor.freebox_temperature_cpu_3", ROUTER, null, "57", { unit_of_measurement: "°C", device_class: "temperature" }, "Température CPU 3"],
+  ["sensor.freebox_temperature_1", ROUTER, null, "55", { unit_of_measurement: "°C", device_class: "temperature" }, "Température 1"],
+  ["sensor.freebox_v9_r1_ventilateur_1", ROUTER, null, "720", { unit_of_measurement: "rpm" }, "Ventilateur 1"],
+  ["sensor.disk_1000_freebox_free_space", DISK, "partition_free_space", "62.4", { unit_of_measurement: "%" }, "Freebox free space"],
+  [
+    "device_tracker.freebox_v9_r1",
+    ROUTER,
+    null,
+    "home",
+    {
+      source_type: "router",
+      IPv4: "203.0.113.42",
+      IPv6: "2001:db8:e66:a2c0::1",
+      connection_type: "ftth",
+      uptime: boot,
+      firmware_version: "4.13.1",
+    },
+    "Freebox v9 (r1)",
+  ],
+];
+
+const CLIENTS = [
+  ["nas", "home"],
+  ["tv", "home"],
+  ["laptop", "home"],
+  ["phone", "home"],
+  ["camera", "home"],
+  ["tablet", "not_home"],
+];
+
+export const states = {};
+export const entities = {};
+for (const [id, device_id, key, state, attributes, name] of raw) {
+  const friendly_name = `${devices[device_id].name} ${name}`;
+  states[id] = { entity_id: id, state, attributes: { ...attributes, friendly_name } };
+  entities[id] = { entity_id: id, platform: "freebox", device_id, ...(key ? { translation_key: key } : {}) };
+}
+for (const [name, state] of CLIENTS) {
+  const device_id = `dev_${name}`;
+  const id = `device_tracker.${name}`;
+  devices[device_id] = { id: device_id, name, config_entries: [ENTRY] };
+  states[id] = { entity_id: id, state, attributes: { source_type: "router", friendly_name: name } };
+  entities[id] = { entity_id: id, platform: "freebox", device_id };
+}
