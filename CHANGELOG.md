@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0
+
+### ✨ Features
+
+- Click the Free logo to open [free.fr](https://www.free.fr), and the Freebox picture to open the Freebox OS admin interface (in a new tab).
+- New `admin_url` option (also in the visual editor) to change the Freebox OS address, `https://mafreebox.freebox.fr` by default.
+
 ## 1.0.0
 
 First release of the Freebox cards for Home Assistant, built for the [Freebox integration](https://www.home-assistant.io/integrations/freebox/).
