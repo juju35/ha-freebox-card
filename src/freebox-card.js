@@ -10,6 +10,8 @@
 const VERSION = "__VERSION__";
 const IMG_BOX = "__IMG_BOX__";
 const IMG_LOGO = "__IMG_LOGO__";
+const FREE_URL = "https://www.free.fr";
+const ADMIN_URL = "https://mafreebox.freebox.fr";
 
 const ICONS = {
   down: "M9,4H15V12H19.84L12,19.84L4.16,12H9V4Z",
@@ -67,6 +69,8 @@ const STRINGS = {
     box: "Freebox (Freebox integration device)",
     title: "Title (optional, defaults to the Freebox model)",
     show_image: "Show Freebox picture",
+    admin: "Open Freebox OS",
+    admin_url: "Freebox OS address (optional, opened when clicking the picture)",
     show_logo: "Show Free logo",
     show_network: "Show network",
     show_system: "Show system (temperatures, fans)",
@@ -114,6 +118,8 @@ const STRINGS = {
     box: "Freebox (appareil de l'intégration Freebox)",
     title: "Titre (facultatif, modèle de la Freebox par défaut)",
     show_image: "Afficher la photo de la Freebox",
+    admin: "Ouvrir Freebox OS",
+    admin_url: "Adresse de Freebox OS (facultatif, ouverte au clic sur la photo)",
     show_logo: "Afficher le logo Free",
     show_network: "Afficher le réseau",
     show_system: "Afficher le système (températures, ventilateurs)",
@@ -350,10 +356,12 @@ const BASE_STYLE = `
   .bar > div { height: 100%; border-radius: 3px; background: var(--c, var(--fb-red)); transition: width .6s ease; }
   .header { display: flex; align-items: center; gap: 12px; padding: 16px 16px 8px; }
   .titles { flex: 1; min-width: 0; }
-  .logo { display: block; height: 20px; width: auto; margin-bottom: 4px; }
+  .logo-link { display: inline-block; margin-bottom: 4px; }
+  .logo { display: block; height: 20px; width: auto; }
   .name { font-size: 18px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 13px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .box { height: 64px; width: auto; flex: none; max-width: 40%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
+  .box-link { display: flex; flex: none; max-width: 40%; }
+  .box { height: 64px; width: auto; max-width: 100%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
   .tile { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; min-width: 0;
           background: var(--secondary-background-color, rgba(127,127,127,.08)); }
   .tile .icon { color: var(--c, var(--fb-red)); }
@@ -444,18 +452,29 @@ class FreeboxBase extends HTMLElement {
     const firmware = box.device?.sw_version || router?.attributes?.firmware_version;
     const devName = deviceName(box.device);
     const name = c.title || modelName(box);
+    const adminUrl = /^https?:\/\//i.test(c.admin_url || "") ? c.admin_url : ADMIN_URL;
     const sub = [devName && devName !== name ? devName : null, firmware ? `${this._t("firmware")} ${firmware}` : null]
       .filter(Boolean)
       .join(" · ");
     return `
       <div class="header">
         <div class="titles">
-          ${c.show_logo !== false ? `<img class="logo" src="${IMG_LOGO}" alt="Free">` : ""}
+          ${
+            c.show_logo !== false
+              ? `<a class="logo-link" href="${FREE_URL}" target="_blank" rel="noopener noreferrer" title="free.fr"><img class="logo" src="${IMG_LOGO}" alt="Free"></a>`
+              : ""
+          }
           <div class="name">${esc(name)}</div>
           <div class="sub">${esc(sub)}</div>
           ${withChips ? this._chips(box) : ""}
         </div>
-        ${c.show_image !== false ? `<img class="box" src="${IMG_BOX}" alt="Freebox">` : ""}
+        ${
+          c.show_image !== false
+            ? `<a class="box-link" href="${esc(adminUrl)}" target="_blank" rel="noopener noreferrer" title="${esc(
+                this._t("admin")
+              )}"><img class="box" src="${IMG_BOX}" alt="Freebox"></a>`
+            : ""
+        }
       </div>`;
   }
 
@@ -670,8 +689,10 @@ class FreeboxCard extends FreeboxBase {
 
 const MINI_STYLE = `
   .header { padding: 12px 12px 4px; }
-  .logo { height: 16px; margin-bottom: 2px; }
-  .box { height: 44px; max-width: 35%; }
+  .logo-link { margin-bottom: 2px; }
+  .logo { height: 16px; }
+  .box-link { max-width: 35%; }
+  .box { height: 44px; }
   .name { font-size: 16px; }
   .content { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
   .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -787,6 +808,7 @@ class FreeboxEditorBase extends HTMLElement {
         selector: { select: { mode: "dropdown", custom_value: true, options: boxOptions } },
       },
       { name: "title", selector: { text: {} } },
+      { name: "admin_url", selector: { text: { type: "url" } } },
       {
         type: "grid",
         name: "",

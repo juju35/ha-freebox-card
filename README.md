@@ -29,6 +29,7 @@ The cards are built on top of the [Freebox integration](https://www.home-assista
 - Services: Wi-Fi state, missed calls and connected devices
 - Colors turn orange / red when a threshold is crossed (temperatures, disk usage, missed calls)
 - Click any value to open its Home Assistant history (more-info dialog)
+- Click the Free logo to open free.fr, and the Freebox picture to open the Freebox OS admin interface
 - Visual editor in the dashboard UI for both cards (no YAML needed)
 - Light and dark mode, English and French
 - Single file, no external dependency, the Freebox picture and the Free logo are embedded
@@ -87,6 +88,7 @@ type: custom:freebox-mini-card
 type: custom:freebox-card
 box: 0123456789abcdef0123456789abcdef
 title: My Freebox
+admin_url: https://mafreebox.freebox.fr
 show_image: true
 show_logo: true
 show_network: true
@@ -101,6 +103,7 @@ language: fr
 type: custom:freebox-mini-card
 box: 0123456789abcdef0123456789abcdef
 title: My Freebox
+admin_url: https://mafreebox.freebox.fr
 show_image: true
 show_logo: true
 show_network: true
@@ -115,8 +118,9 @@ language: fr
 |---|---|---|---|
 | `box` | both | First Freebox found | Freebox to display: its device id (only needed with several Freebox, pick it in the visual editor) |
 | `title` | both | Freebox model | Card title |
+| `admin_url` | both | `https://mafreebox.freebox.fr` | Freebox OS address opened when clicking the Freebox picture (for example `http://192.168.1.254`) |
 | `show_image` | both | `true` | Show the Freebox picture |
-| `show_logo` | both | `true` | Show the Free logo |
+| `show_logo` | both | `true` | Show the Free logo (opens free.fr when clicked) |
 | `show_network` | both | `true` | Download / upload rates (and IPv4, uptime on the full card) |
 | `show_system` | both | `true` | Temperatures and fans (hottest temperature on the mini card) |
 | `show_storage` | full | `true` | Disk partitions and RAID status |
