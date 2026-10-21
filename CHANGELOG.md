@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+### 🧹 Maintenance
+
+- Validate workflow and README badges aligned with the other ha-* repositories. Nothing changes for users.
+
 ## 1.1.0
 
 ### ✨ Features
