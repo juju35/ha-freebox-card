@@ -341,7 +341,7 @@ const partitionLabel = (hass, p) =>
 // ---------------------------------------------------------------------------
 
 const BASE_STYLE = `
-  :host { --fb-red: #cd1e25; --fb-ok: var(--success-color, #43a047); --fb-warn: var(--warning-color, #ffa000); --fb-crit: var(--error-color, #db4437); }
+  :host { --fb-red: #cd1e25; --fb-ok: var(--success-color, #43a047); --fb-warn: var(--warning-color, #ffa600); --fb-crit: var(--error-color, #db4437); }
   ha-card { overflow: hidden; }
   .icon { width: 18px; height: 18px; fill: currentColor; flex: none; }
   .muted { color: var(--secondary-text-color); }
@@ -369,7 +369,7 @@ const BASE_STYLE = `
   .tile .k { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tile .v { font-size: 15px; font-weight: 500; white-space: nowrap; }
   .tile.down { --c: var(--fb-red); }
-  .tile.up { --c: #2196f3; }
+  .tile.up { --c: var(--info-color, #039be5); }
   .warning { padding: 16px; color: var(--fb-warn); }
 `;
 
