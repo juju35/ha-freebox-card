@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0
+
+### Changes
+- The Free logo sits in a 40 px tile left of the title, like the logos of the other ha-* cards, instead of above it.
+- HACS now asks for Home Assistant 2024.8 or later, the version that brought the sections view the card supports; the README says so under **Prerequisites**.
+
+### Fixes
+- "Uptime: 10 d" in English, without the French space before the colon.
+
+### Maintenance
+- CHANGELOG headings use the same plain English set as the other ha-* repositories.
+
 ## 1.2.0
 
 ### Changes
@@ -12,14 +24,12 @@
 
 ## 1.1.1
 
-### 🧹 Maintenance
-
+### Maintenance
 - Validate workflow and README badges aligned with the other ha-* repositories. Nothing changes for users.
 
 ## 1.1.0
 
-### ✨ Features
-
+### What's new
 - Click the Free logo to open [free.fr](https://www.free.fr), and the Freebox picture to open the Freebox OS admin interface (in a new tab).
 - New `admin_url` option (also in the visual editor) to change the Freebox OS address, `https://mafreebox.freebox.fr` by default.
 
@@ -31,8 +41,7 @@ First release of the Freebox cards for Home Assistant, built for the [Freebox in
 |---|---|
 | ![freebox-card](https://raw.githubusercontent.com/juju35/ha-freebox-card/main/screenshots/card.png) | ![freebox-mini-card](https://raw.githubusercontent.com/juju35/ha-freebox-card/main/screenshots/mini-card.png) |
 
-### ✨ Features
-
+### What's new
 - **Freebox Card** (`custom:freebox-card`): model and firmware, connection status and type, download / upload rates, public IP and uptime, temperature gauges, fans, disk partitions and RAID status, Wi-Fi, missed calls and connected devices.
 - **Freebox Mini Card** (`custom:freebox-mini-card`): compact overview with download / upload, connection, hottest temperature, Wi-Fi, missed calls and uptime.
 - **Automatic discovery** of the integration entities through the entity registry (translation keys): no entity to pick, translated entity ids and several Freebox supported.
@@ -42,14 +51,12 @@ First release of the Freebox cards for Home Assistant, built for the [Freebox in
 - Light and dark mode, English and French.
 - Single file with no external dependency, the Freebox picture and the Free logo are embedded.
 
-### 📦 Installation
-
+### Installation
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=juju35&repository=ha-freebox-card&category=plugin)
 
 Open the link above (or add `https://github.com/juju35/ha-freebox-card` as a **Dashboard** custom repository in HACS), click **Download**, then reload your browser. Manual install: copy `freebox-card.js` from the assets below to `/config/www/` and add `/local/freebox-card.js` as a JavaScript Module resource.
 
-### 🚀 Quick start
-
+### Quick start
 ```yaml
 type: custom:freebox-card
 ```

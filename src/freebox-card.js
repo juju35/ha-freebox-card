@@ -39,7 +39,7 @@ const STRINGS = {
     services: "Services",
     download: "Download",
     upload: "Upload",
-    uptime: "Uptime",
+    uptime: "Uptime:",
     firmware: "Firmware",
     devices: "Connected devices",
     devices_short: "Devices",
@@ -356,8 +356,9 @@ const BASE_STYLE = `
   .bar > div { height: 100%; border-radius: 3px; background: var(--c, var(--fb-red)); transition: width .6s ease; }
   .header { display: flex; align-items: center; gap: 12px; padding: 16px 16px 8px; }
   .titles { flex: 1; min-width: 0; }
-  .logo-link { display: inline-block; margin-bottom: 4px; }
-  .logo { display: block; height: 20px; width: auto; }
+  .logo-link { display: flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px; border-radius: 10px;
+               background: #fff; box-shadow: inset 0 0 0 1px var(--divider-color, rgba(0,0,0,.12)); }
+  .logo { display: block; width: 32px; height: auto; }
   .name { font-size: 18px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 13px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .box-link { display: flex; flex: none; max-width: 40%; }
@@ -458,12 +459,12 @@ class FreeboxBase extends HTMLElement {
       .join(" · ");
     return `
       <div class="header">
+        ${
+          c.show_logo !== false
+            ? `<a class="logo-link" href="${FREE_URL}" target="_blank" rel="noopener noreferrer" title="free.fr"><img class="logo" src="${IMG_LOGO}" alt="Free"></a>`
+            : ""
+        }
         <div class="titles">
-          ${
-            c.show_logo !== false
-              ? `<a class="logo-link" href="${FREE_URL}" target="_blank" rel="noopener noreferrer" title="free.fr"><img class="logo" src="${IMG_LOGO}" alt="Free"></a>`
-              : ""
-          }
           <div class="name">${esc(name)}</div>
           <div class="sub">${esc(sub)}</div>
           ${withChips ? this._chips(box) : ""}
@@ -584,7 +585,7 @@ class FreeboxCard extends FreeboxBase {
     const up = uptimeSec(router);
     if (up !== null)
       facts.push(
-        `<span class="clickable" data-entity="${router.entity_id}">${svgIcon(ICONS.timer)}${this._t("uptime")} : ${fmtUptime(
+        `<span class="clickable" data-entity="${router.entity_id}">${svgIcon(ICONS.timer)}${this._t("uptime")} ${fmtUptime(
           up,
           this._hass,
           this._config
@@ -689,8 +690,7 @@ class FreeboxCard extends FreeboxBase {
 
 const MINI_STYLE = `
   .header { padding: 12px 12px 4px; }
-  .logo-link { margin-bottom: 2px; }
-  .logo { height: 16px; }
+
   .box-link { max-width: 35%; }
   .box { height: 44px; }
   .name { font-size: 16px; }

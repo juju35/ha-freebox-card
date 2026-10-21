@@ -37,6 +37,8 @@ The cards are built on top of the [Freebox integration](https://www.home-assista
 
 ## Prerequisites
 
+Home Assistant 2024.8 or later, and:
+
 The [Freebox integration](https://www.home-assistant.io/integrations/freebox/) must be configured (it is built into Home Assistant: **Settings → Devices & services → Add integration → Freebox**).
 
 The connected devices count uses the `device_tracker` entities of the integration, which are disabled by default: enable the ones you want to follow.
