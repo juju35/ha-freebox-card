@@ -158,7 +158,7 @@ const esc = (v) =>
   String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 const lang = (hass, config) => {
-  const l = (config && config.language) || (hass && (hass.locale?.language || hass.language)) || "en";
+  const l = (config?.language) || (hass && (hass.locale?.language || hass.language)) || "en";
   return STRINGS[l] ? l : STRINGS[l.split("-")[0]] ? l.split("-")[0] : "en";
 };
 
@@ -387,12 +387,12 @@ class FreeboxBase extends HTMLElement {
     this._html = "";
     this.shadowRoot.addEventListener("click", (ev) => {
       const path = ev.composedPath();
-      const press = path.find((n) => n.dataset && n.dataset.press);
+      const press = path.find((n) => n.dataset?.press);
       if (press) {
         this._hass?.callService("button", "press", { entity_id: press.dataset.press });
         return;
       }
-      const el = path.find((n) => n.dataset && n.dataset.entity);
+      const el = path.find((n) => n.dataset?.entity);
       if (el) fireMoreInfo(this, el.dataset.entity);
     });
   }
