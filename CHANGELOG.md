@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0
+
+### Changes
+- More compact layout with the same information, like the other ha-* cards: 12 px card padding, 36 px header icon, 16 px name and 12 px subtitle, 11 px pills, tighter tiles and sections.
+- Box picture 64 → 48 px, Free logo tile 36 px, temperature gauges 64 → 52 px; storage on one line with its bar underneath.
+- The mini card picks up the smaller pills and subtitle.
+
 ## 1.3.0
 
 ### Changes
