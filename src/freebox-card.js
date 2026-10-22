@@ -732,6 +732,10 @@ const MINI_STYLE = `
   .foot span { display: inline-flex; align-items: center; gap: 3px; }
   .foot .icon { width: 14px; height: 14px; }
   .foot .ok .icon { color: var(--fb-ok); } .foot .warn { color: var(--fb-warn); } .foot .crit { color: var(--fb-crit); }
+  .foot .reset { display: grid; place-items: center; width: 18px; height: 18px; padding: 0; margin-left: 3px; border: none;
+    border-radius: 50%; cursor: pointer; color: var(--fb-warn); background: color-mix(in srgb, var(--fb-warn) 15%, transparent); }
+  .foot .reset:hover { background: color-mix(in srgb, var(--fb-warn) 28%, transparent); }
+  .foot .reset .icon { width: 12px; height: 12px; }
 `;
 
 class FreeboxMiniCard extends FreeboxBase {
@@ -794,8 +798,15 @@ class FreeboxMiniCard extends FreeboxBase {
         wifi.state === "on" ? ICONS.wifi : ICONS.wifi_off
       )}${this._t("wifi")}</span>`);
     const missed = this._s(sc.missed);
-    if (missed && (num(missed) ?? 0) > 0)
-      foot.push(`<span class="clickable warn" data-entity="${missed.entity_id}">${svgIcon(ICONS.phone_missed)}${num(missed)}</span>`);
+    if (missed && (num(missed) ?? 0) > 0) {
+      const markRead = this._s(sc.mark_read);
+      const reset = markRead
+        ? `<button class="reset" data-press="${markRead.entity_id}" title="${esc(this._t("mark_read"))}" aria-label="${esc(
+            this._t("mark_read")
+          )}">${svgIcon(ICONS.check)}</button>`
+        : "";
+      foot.push(`<span class="clickable warn" data-entity="${missed.entity_id}">${svgIcon(ICONS.phone_missed)}${num(missed)}${reset}</span>`);
+    }
     const up = uptimeSec(router);
     if (up !== null) foot.push(`<span>${svgIcon(ICONS.timer)}${fmtUptime(up, this._hass, this._config)}</span>`);
     return `<style>${BASE_STYLE}${MINI_STYLE}</style>

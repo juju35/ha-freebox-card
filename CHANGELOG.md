@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.1
+
+### Changes
+- The mini card gets the button too: a small check next to the missed calls count in its footer marks them as read.
+
 ## 1.5.0
 
 ### New
