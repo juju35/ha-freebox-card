@@ -24,6 +24,7 @@ const ICONS = {
   devices: "M3,6H21V4H3C1.9,4 1,4.9 1,6V18A2,2 0 0,0 3,20H7V18H3V6M13,12H9V13.78C8.39,14.33 8,15.11 8,16C8,16.89 8.39,17.67 9,18.22V20H13V18.22C13.61,17.67 14,16.88 14,16C14,15.12 13.61,14.33 13,13.78V12M11,17.5A1.5,1.5 0 0,1 9.5,16A1.5,1.5 0 0,1 11,14.5A1.5,1.5 0 0,1 12.5,16A1.5,1.5 0 0,1 11,17.5M22,8H16A1,1 0 0,0 15,9V19A1,1 0 0,0 16,20H22A1,1 0 0,0 23,19V9A1,1 0 0,0 22,8M21,18H17V10H21V18Z",
   wifi: "M12,21L15.6,16.2C14.6,15.45 13.35,15 12,15C10.65,15 9.4,15.45 8.4,16.2L12,21M12,3C7.95,3 4.21,4.34 1.2,6.6L3,9C5.5,7.12 8.62,6 12,6C15.38,6 18.5,7.12 21,9L22.8,6.6C19.79,4.34 16.05,3 12,3M12,9C9.3,9 6.81,9.89 4.8,11.4L6.6,13.8C8.1,12.67 9.97,12 12,12C14.03,12 15.9,12.67 17.4,13.8L19.2,11.4C17.19,9.89 14.7,9 12,9Z",
   wifi_off: "M2.28,3L1,4.27L2.47,5.74C2.04,6 1.61,6.29 1.2,6.6L3,9C3.39,8.7 3.82,8.42 4.26,8.16L6.5,10.4C5.9,10.68 5.33,11 4.8,11.4L6.6,13.8C7.14,13.4 7.73,13.06 8.35,12.79L10.88,15.32C10,15.5 9.13,15.79 8.4,16.2L12,21L14.88,17.17L19.73,22L21,20.72L3.28,3H2.28M12,3C10.08,3 8.24,3.3 6.5,3.85L8.97,6.32C9.95,6.11 10.96,6 12,6C15.38,6 18.5,7.12 21,9L22.8,6.6C19.79,4.34 16.05,3 12,3M12,9C11.62,9 11.25,9 10.88,9.05L14.15,12.32C15.32,12.6 16.43,13.09 17.4,13.8L19.2,11.4C17.19,9.89 14.7,9 12,9Z",
+  check: "M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.58L21,7Z",
   phone: "M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z",
   phone_missed: "M23.71,16.67C20.66,13.77 16.54,12 12,12C7.46,12 3.34,13.77 0.29,16.67C0.11,16.85 0,17.1 0,17.38C0,17.66 0.11,17.9 0.29,18.08L2.77,20.56C2.95,20.74 3.2,20.85 3.5,20.85C3.75,20.85 4,20.75 4.18,20.57C4.97,19.83 5.86,19.21 6.84,18.71C7.17,18.55 7.4,18.21 7.4,17.81V14.71C8.85,14.24 10.39,14 12,14C13.6,14 15.15,14.24 16.6,14.72V17.82C16.6,18.22 16.83,18.56 17.16,18.72C18.14,19.21 19.04,19.84 19.82,20.58C20,20.76 20.25,20.86 20.5,20.86C20.8,20.86 21.05,20.75 21.23,20.57L23.71,18.09C23.89,17.91 24,17.66 24,17.38C24,17.1 23.89,16.85 23.71,16.67M6.5,5.5L12,11L19,4L18,3L12,9L7.5,4.5H11V3H5V9H6.5V5.5Z",
   database: "M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z",
@@ -49,6 +50,7 @@ const STRINGS = {
     on: "On",
     off: "Off",
     missed_calls: "Missed calls",
+    mark_read: "Mark calls as read",
     calls: "Calls",
     missed: "missed",
     fan: "Fan",
@@ -99,6 +101,7 @@ const STRINGS = {
     on: "Activé",
     off: "Désactivé",
     missed_calls: "Appels manqués",
+    mark_read: "Marquer les appels comme lus",
     calls: "Appels",
     missed: "manqués",
     fan: "Ventilateur",
@@ -296,6 +299,7 @@ const discover = (hass, boxId) => {
         const k = e.translation_key;
         const a = hass.states[id].attributes;
         if (k === "rate_down" || k === "rate_up" || k === "missed" || k === "wifi") box.scalars[k] = id;
+        else if (own && domain === "button" && k === "mark_calls_as_read") box.scalars.mark_read = id;
         else if (k === "partition_free_space") box.partitions.push({ id, device: d });
         else if (k === "raid_degraded") box.raids.push(id);
         else if (own && domain === "sensor" && !k && a.device_class === "temperature") box.temps.push({ id, name: shortName(hass, id, dev) });
@@ -312,6 +316,7 @@ const discover = (hass, boxId) => {
       else if (/^sensor\.freebox.*_download_speed$/.test(id)) box.scalars.rate_down ??= id;
       else if (/^sensor\.freebox.*_upload_speed$/.test(id)) box.scalars.rate_up ??= id;
       else if (/^sensor\.freebox.*_missed_calls$/.test(id)) box.scalars.missed ??= id;
+      else if (/^button\.freebox.*_mark_calls_as_read$/.test(id)) box.scalars.mark_read ??= id;
       else if (/^switch\.freebox.*_wifi$/.test(id)) box.scalars.wifi ??= id;
       else if (/^sensor\.freebox/.test(id) && a.device_class === "temperature") box.temps.push({ id, name: tail(hass, id) });
       else if (/^sensor\.freebox/.test(id) && /^rpm$/i.test(a.unit_of_measurement || "")) box.fans.push({ id, name: tail(hass, id) });
@@ -381,7 +386,13 @@ class FreeboxBase extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this._html = "";
     this.shadowRoot.addEventListener("click", (ev) => {
-      const el = ev.composedPath().find((n) => n.dataset && n.dataset.entity);
+      const path = ev.composedPath();
+      const press = path.find((n) => n.dataset && n.dataset.press);
+      if (press) {
+        this._hass?.callService("button", "press", { entity_id: press.dataset.press });
+        return;
+      }
+      const el = path.find((n) => n.dataset && n.dataset.entity);
       if (el) fireMoreInfo(this, el.dataset.entity);
     });
   }
@@ -532,6 +543,14 @@ const FULL_STYLE = `
   .part .detail { font-size: 11px; color: var(--secondary-text-color); display: flex; justify-content: flex-end; grid-column: 2; grid-row: 1; gap: 8px; }
   .tile.svc { --c: var(--secondary-text-color); }
   .tile.svc.ok { --c: var(--fb-ok); } .tile.svc.warn { --c: var(--fb-warn); }
+  .tiles.svc-row { display: flex; flex-wrap: wrap; }
+  .tiles.svc-row .tile { flex: 1 1 auto; }
+  .tile:has(.reset) { padding-right: 6px; }
+  .tile:has(.reset) .v { overflow: hidden; text-overflow: ellipsis; }
+  .tile .reset { margin-left: auto; flex: none; display: grid; place-items: center; width: 22px; height: 22px; padding: 0;
+    border: none; border-radius: 50%; cursor: pointer; color: var(--c); background: color-mix(in srgb, var(--c) 15%, transparent); }
+  .tile .reset:hover { background: color-mix(in srgb, var(--c) 28%, transparent); }
+  .tile .reset .icon { width: 14px; height: 14px; }
   .spin { animation: spin 1.6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
@@ -671,9 +690,15 @@ class FreeboxCard extends FreeboxBase {
     const missed = this._s(sc.missed);
     if (missed) {
       const n = num(missed) ?? 0;
+      const markRead = n > 0 && this._s(sc.mark_read);
+      const reset = markRead
+        ? `<button class="reset" data-press="${markRead.entity_id}" title="${esc(this._t("mark_read"))}" aria-label="${esc(
+            this._t("mark_read")
+          )}">${svgIcon(ICONS.check)}</button>`
+        : "";
       tiles.push(`<div class="tile svc clickable ${n > 0 ? "warn" : ""}" data-entity="${missed.entity_id}">${svgIcon(
         n > 0 ? ICONS.phone_missed : ICONS.phone
-      )}<div><div class="k">${this._t("calls")}</div><div class="v">${n} ${this._t("missed")}</div></div></div>`);
+      )}<div><div class="k">${this._t("calls")}</div><div class="v">${n} ${this._t("missed")}</div></div>${reset}</div>`);
     }
     if (box.trackers.length) {
       const home = box.trackers.filter((id) => this._s(id)?.state === "home").length;
@@ -682,7 +707,7 @@ class FreeboxCard extends FreeboxBase {
       )}</div><div class="v">${home} / ${box.trackers.length}</div></div></div>`);
     }
     if (!tiles.length) return "";
-    return `<div><div class="section-title">${svgIcon(ICONS.services)}${this._t("services")}</div><div class="tiles">${tiles.join(
+    return `<div><div class="section-title">${svgIcon(ICONS.services)}${this._t("services")}</div><div class="tiles svc-row">${tiles.join(
       ""
     )}</div></div>`;
   }
