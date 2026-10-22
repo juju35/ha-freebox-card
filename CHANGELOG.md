@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.0
+
+### New
+- A check button on the calls tile marks the missed calls as read: it presses the Freebox integration's **Mark calls as read** button and only shows when there are missed calls. The rest of the tile still opens the missed calls sensor.
+
+### Changes
+- The service tiles size to their content, so "2 manqués" keeps room next to the button.
+
 ## 1.4.0
 
 ### Changes
