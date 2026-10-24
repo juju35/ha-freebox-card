@@ -6,7 +6,7 @@
 [![Release](https://img.shields.io/github/v/release/juju35/ha-freebox-card)](https://github.com/juju35/ha-freebox-card/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-<p align="center"><img src="images/free.png" alt="Free" width="160"><br><img src="images/freebox-ultra.png" alt="Freebox" width="320"></p>
+<p align="center"><img src="images/free.png" alt="Free" width="160"></p>
 
 Lovelace cards for Home Assistant to monitor a Freebox: download / upload rates, connection, temperatures, fans, storage, Wi-Fi, missed calls and connected devices at a glance.
 
