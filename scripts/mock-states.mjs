@@ -3,7 +3,11 @@
 const ROUTER = "dev_router";
 const DISK = "dev_disk";
 const ENTRY = "entry_freebox";
-const boot = new Date(Date.now() - (10 * 86400 + 12 * 3600 + 49 * 60) * 1000).toISOString().slice(0, 19);
+// Fixed clock, so the screenshots do not change with the day they are taken: the screenshot script sets
+// the page clock to NOW. The boot date is naive, as the integration gives it, in the UTC time zone of the
+// mock Home Assistant (config.time_zone in the screenshot script): uptime 10 d 12 h 49 min.
+export const NOW = "2026-10-20T12:00:00Z";
+const boot = new Date(Date.parse(NOW) - (10 * 86400 + 12 * 3600 + 49 * 60) * 1000).toISOString().slice(0, 19);
 
 export const devices = {
   [ROUTER]: {

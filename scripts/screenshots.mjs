@@ -3,7 +3,7 @@
 import { chromium } from "playwright";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { states, entities, devices } from "./mock-states.mjs";
+import { states, entities, devices, NOW } from "./mock-states.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const cardJs = readFileSync(`${root}dist/freebox-card.js`, "utf8");
@@ -54,8 +54,11 @@ const shots = [
 const browser = await chromium.launch(
   process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}
 );
-const page = await browser.newPage({ deviceScaleFactor: 2, viewport: { width: 1000, height: 2000 } });
 for (const s of shots) {
+  // A fresh page for each capture: the card script declares its classes and custom elements once per page.
+  const page = await browser.newPage({ deviceScaleFactor: 2, viewport: { width: 1000, height: 2000 } });
+  page.on("pageerror", (err) => console.error(`${s.file}: ${err.message}`));
+  await page.clock.setFixedTime(new Date(NOW));
   await page.setContent(page_html(s.theme, s.width));
   await page.addScriptTag({ content: HA_CARD });
   await page.addScriptTag({ content: cardJs });
@@ -63,7 +66,7 @@ for (const s of shots) {
     ({ type, config, states, entities, devices }) => {
       const el = document.createElement(type);
       el.setConfig({ type: `custom:${type}`, ...config });
-      el.hass = { states, entities, devices, language: "en", locale: { language: "en" } };
+      el.hass = { states, entities, devices, language: "en", locale: { language: "en" }, config: { time_zone: "UTC" } };
       document.getElementById("root").appendChild(el);
     },
     { type: s.type, config: s.config, states, entities, devices }
@@ -76,5 +79,6 @@ for (const s of shots) {
     animations: "disabled",
   });
   console.log(`screenshots/${s.file}.png`);
+  await page.close();
 }
 await browser.close();

@@ -208,8 +208,11 @@ const tzOffset = (timeZone, ms) => {
 };
 
 /**
- * Parse a date. The Freebox integration exposes a naive datetime (no UTC offset) in the time zone of
- * Home Assistant, so such a date is read in timeZone (hass.config.time_zone), not in the browser's.
+ * Parse a date. The Freebox integration exposes a naive datetime (no UTC offset), built with
+ * datetime.fromtimestamp(), so in the system time zone of the Home Assistant process (its TZ variable),
+ * which Home Assistant does not set itself. It is read in timeZone (hass.config.time_zone), not in the
+ * browser's: both match on Home Assistant OS and Supervised, where the Supervisor passes TZ, but not in
+ * a container started without TZ (see the README).
  */
 const parseDate = (raw, timeZone) => {
   const str = String(raw).trim().replace(" ", "T");
