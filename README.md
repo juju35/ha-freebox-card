@@ -30,7 +30,7 @@ The cards are built on top of the [Freebox integration](https://www.home-assista
 - Services: Wi-Fi state, missed calls and connected devices
 - A check button next to the missed calls (calls tile, mini card footer) marks them as read (the integration's **Mark calls as read** button), shown only when there are missed calls
 - Colors turn orange / red when a threshold is crossed (temperatures, disk usage, missed calls)
-- Click any value to open its Home Assistant history (more-info dialog)
+- Click any value (except the connected devices count, a total over several trackers) to open its Home Assistant history (more-info dialog)
 - Click the Free logo to open free.fr, and the Freebox picture to open the Freebox OS admin interface
 - Visual editor in the dashboard UI for both cards (no YAML needed)
 - Light and dark mode, English and French
