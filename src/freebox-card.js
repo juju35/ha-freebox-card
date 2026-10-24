@@ -242,25 +242,54 @@ const svgIcon = (path, cls = "") => `<svg class="icon ${cls}" viewBox="0 0 24 24
 const sameSig = (a, b) => !!a && !!b && a.length === b.length && a.every((v, i) => v === b[i]);
 
 // Patch the shadow DOM in place from the new HTML: nodes whose tag is unchanged are kept, so keyboard
-// focus, hover, the embedded pictures and CSS transitions (bars, rings) survive an update, and only the
-// changed text and attributes are written.
+// focus, hover, embedded pictures and CSS transitions survive an update, and only the changed text and
+// attributes are written. Rows of a list carry a data-key (their entity or row id) and are matched by it,
+// wherever they moved, so a focused row keeps its own data when the list is reordered (a node matched by
+// position would be rewritten with the row taking its place, and Enter would act on that row). Nodes
+// without a data-key are matched by position.
 const patchAttrs = (cur, next) => {
   for (const { name } of [...cur.attributes]) if (!next.hasAttribute(name)) cur.removeAttribute(name);
   for (const { name, value } of next.attributes) if (cur.getAttribute(name) !== value) cur.setAttribute(name, value);
 };
+const keyOf = (n) => (n.nodeType === 1 ? n.getAttribute("data-key") : null);
+const sameNode = (a, b) => !!a && a.nodeType === b.nodeType && a.nodeName === b.nodeName;
+// Moves a kept node. moveBefore (where supported) keeps its focus; insertBefore drops it, which is safe:
+// Enter then does nothing rather than act on another row.
+const place = (parent, node, ref) => {
+  if (node === ref) return;
+  try {
+    if (parent.moveBefore && node.parentNode === parent) return parent.moveBefore(node, ref);
+  } catch (_e) {
+    /* fall back to insertBefore */
+  }
+  parent.insertBefore(node, ref);
+};
 const patchChildren = (cur, next) => {
   const old = [...cur.childNodes];
   const fresh = [...next.childNodes];
+  const byKey = new Map();
+  for (const o of old) {
+    const k = keyOf(o);
+    if (k !== null && !byKey.has(k)) byKey.set(k, o);
+  }
+  const used = new Set();
   fresh.forEach((n, i) => {
-    const o = old[i];
-    if (!o) cur.appendChild(n);
-    else if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName) cur.replaceChild(n, o);
-    else if (n.nodeType === 1) {
+    const k = keyOf(n);
+    let o = k !== null ? byKey.get(k) : old[i];
+    if (!sameNode(o, n) || used.has(o) || (k === null && keyOf(o) !== null)) o = null;
+    const ref = cur.childNodes[i] ?? null;
+    if (!o) {
+      cur.insertBefore(n, ref);
+      return;
+    }
+    used.add(o);
+    place(cur, o, ref);
+    if (n.nodeType === 1) {
       patchAttrs(o, n);
       patchChildren(o, n);
     } else if (o.nodeValue !== n.nodeValue) o.nodeValue = n.nodeValue;
   });
-  for (let i = fresh.length; i < old.length; i++) cur.removeChild(old[i]);
+  while (cur.childNodes.length > fresh.length) cur.removeChild(cur.lastChild);
 };
 const morph = (root, html) => {
   const tpl = document.createElement("template");
@@ -744,7 +773,7 @@ class FreeboxCard extends FreeboxBase {
       .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
     const gauges = temps.map(({ id, name, label }) => {
       const v = num(this._s(id));
-      return `<div class="gauge clickable ${level(v, 75, 90)}" role="button" tabindex="0" data-entity="${id}" title="${esc(name)}">
+      return `<div class="gauge clickable ${level(v, 75, 90)}" role="button" tabindex="0" data-key="${id}" data-entity="${id}" title="${esc(name)}">
         ${ring(v)}
         <div class="val"><b>${v === null ? "—" : `${Math.round(v)}°`}</b></div>
         <div class="lbl">${esc(label)}</div>
@@ -752,7 +781,7 @@ class FreeboxCard extends FreeboxBase {
     });
     const fans = box.fans.map(({ id, name }) => {
       const rpm = num(this._s(id));
-      return `<div class="tile clickable" role="button" tabindex="0" data-entity="${id}">${svgIcon(ICONS.fan, rpm ? "spin" : "")}<div><div class="k">${esc(
+      return `<div class="tile clickable" role="button" tabindex="0" data-key="${id}" data-entity="${id}">${svgIcon(ICONS.fan, rpm ? "spin" : "")}<div><div class="k">${esc(
         name
       )}</div><div class="v">${rpm === null ? "—" : `${Math.round(rpm)} rpm`}</div></div></div>`;
     });
@@ -768,7 +797,7 @@ class FreeboxCard extends FreeboxBase {
       const free = num(this._s(p.id));
       const used = free === null ? null : Math.max(0, Math.min(100, 100 - free));
       const cls = level(used, 80, 90);
-      return `<div class="part clickable ${cls}" role="button" tabindex="0" data-entity="${p.id}">
+      return `<div class="part clickable ${cls}" role="button" tabindex="0" data-key="${p.id}" data-entity="${p.id}">
         <div class="row"><span class="dot ${cls || "ok"}"></span><span class="grow">${esc(partitionLabel(this._hass, p))}</span>
           <span class="muted">${esc(p.device?.model || "")}</span></div>
         <div class="bar"><div style="width:${used ?? 0}%"></div></div>
@@ -778,7 +807,7 @@ class FreeboxCard extends FreeboxBase {
     });
     for (const id of box.raids) {
       const degraded = this._s(id)?.state === "on";
-      rows.push(`<div class="row clickable" role="button" tabindex="0" data-entity="${id}"><span class="dot ${degraded ? "crit" : "ok"}"></span>
+      rows.push(`<div class="row clickable" role="button" tabindex="0" data-key="${id}" data-entity="${id}"><span class="dot ${degraded ? "crit" : "ok"}"></span>
         <span class="grow">${esc(shortName(this._hass, id, box.device))}</span>
         <span class="chip ${degraded ? "crit" : "ok"}">${this._t(degraded ? "raid_degraded" : "raid_ok")}</span></div>`);
     }
@@ -792,7 +821,7 @@ class FreeboxCard extends FreeboxBase {
     const wifi = this._s(sc.wifi);
     if (wifi) {
       const on = wifi.state === "on";
-      tiles.push(`<div class="tile svc clickable ${on ? "ok" : ""}" role="button" tabindex="0" data-entity="${wifi.entity_id}">${svgIcon(
+      tiles.push(`<div class="tile svc clickable ${on ? "ok" : ""}" role="button" tabindex="0" data-key="${wifi.entity_id}" data-entity="${wifi.entity_id}">${svgIcon(
         on ? ICONS.wifi : ICONS.wifi_off
       )}<div><div class="k">${this._t("wifi")}</div><div class="v">${this._t(on ? "on" : "off")}</div></div></div>`);
     }
@@ -805,13 +834,13 @@ class FreeboxCard extends FreeboxBase {
             this._t("mark_read")
           )}">${svgIcon(ICONS.check)}</button>`
         : "";
-      tiles.push(`<div class="tile svc clickable ${n > 0 ? "warn" : ""}" role="button" tabindex="0" data-entity="${missed.entity_id}">${svgIcon(
+      tiles.push(`<div class="tile svc clickable ${n > 0 ? "warn" : ""}" role="button" tabindex="0" data-key="${missed.entity_id}" data-entity="${missed.entity_id}">${svgIcon(
         n > 0 ? ICONS.phone_missed : ICONS.phone
       )}<div><div class="k">${this._t("calls")}</div><div class="v">${n} ${this._t("missed")}</div></div>${reset}</div>`);
     }
     if (box.trackers.length) {
       const home = box.trackers.filter((id) => this._s(id)?.state === "home").length;
-      tiles.push(`<div class="tile svc ok"><span>${svgIcon(ICONS.devices)}</span><div><div class="k">${this._t(
+      tiles.push(`<div class="tile svc ok" data-key="devices"><span>${svgIcon(ICONS.devices)}</span><div><div class="k">${this._t(
         "devices_short"
       )}</div><div class="v">${home} / ${box.trackers.length}</div></div></div>`);
     }
@@ -886,7 +915,7 @@ class FreeboxMiniCard extends FreeboxBase {
     const router = this._s(sc.router);
     if (router) {
       const online = router.state === "home";
-      foot.push(`<span class="clickable ${online ? "ok" : "crit"}" role="button" tabindex="0" data-entity="${router.entity_id}"><span class="dot"></span>&nbsp;${esc(
+      foot.push(`<span class="clickable ${online ? "ok" : "crit"}" role="button" tabindex="0" data-key="router" data-entity="${router.entity_id}"><span class="dot"></span>&nbsp;${esc(
         String(router.attributes.connection_type || this._t(online ? "online" : "offline")).toUpperCase()
       )}</span>`);
     }
@@ -897,13 +926,13 @@ class FreeboxMiniCard extends FreeboxBase {
         if (v !== null && (!hottest || v > hottest.v)) hottest = { v, id: tmp.id };
       }
       if (hottest)
-        foot.push(`<span class="clickable ${level(hottest.v, 75, 90)}" role="button" tabindex="0" data-entity="${hottest.id}">${svgIcon(ICONS.temp)}${Math.round(
+        foot.push(`<span class="clickable ${level(hottest.v, 75, 90)}" role="button" tabindex="0" data-key="hottest" data-entity="${hottest.id}">${svgIcon(ICONS.temp)}${Math.round(
           hottest.v
         )}°C</span>`);
     }
     const wifi = this._s(sc.wifi);
     if (wifi)
-      foot.push(`<span class="clickable ${wifi.state === "on" ? "ok" : ""}" role="button" tabindex="0" data-entity="${wifi.entity_id}">${svgIcon(
+      foot.push(`<span class="clickable ${wifi.state === "on" ? "ok" : ""}" role="button" tabindex="0" data-key="${wifi.entity_id}" data-entity="${wifi.entity_id}">${svgIcon(
         wifi.state === "on" ? ICONS.wifi : ICONS.wifi_off
       )}${this._t("wifi")}</span>`);
     const missed = this._s(sc.missed);
@@ -914,10 +943,10 @@ class FreeboxMiniCard extends FreeboxBase {
             this._t("mark_read")
           )}">${svgIcon(ICONS.check)}</button>`
         : "";
-      foot.push(`<span class="clickable warn" role="button" tabindex="0" data-entity="${missed.entity_id}">${svgIcon(ICONS.phone_missed)}${num(missed)}${reset}</span>`);
+      foot.push(`<span class="clickable warn" role="button" tabindex="0" data-key="${missed.entity_id}" data-entity="${missed.entity_id}">${svgIcon(ICONS.phone_missed)}${num(missed)}${reset}</span>`);
     }
     const up = this._uptime(router);
-    if (up !== null) foot.push(`<span>${svgIcon(ICONS.timer)}${fmtUptime(up, this._hass, this._config)}</span>`);
+    if (up !== null) foot.push(`<span data-key="uptime">${svgIcon(ICONS.timer)}${fmtUptime(up, this._hass, this._config)}</span>`);
     return `<style>${BASE_STYLE}${MINI_STYLE}</style>
       <ha-card>
         ${this._header(box, false)}
