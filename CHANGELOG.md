@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.6.0
+
+### Fixes
+- "Devices x / y" now counts the Freebox client trackers that have no device of their own (most of them), so the figure goes up to the real number of clients. With several Freeboxes, those trackers stay uncounted rather than counted twice.
+- Uptime is no longer shifted when the browser is in another time zone than Home Assistant.
+
+### Changes
+- The card only re-renders when something it shows changes, and updates the page in place: keyboard focus, hover and text selection survive updates, the bars, rings and chevrons animate again, and the box pictures are not decoded again on every poll. The uptime still ticks every minute.
+- Keyboard access: clickable tiles and gauges can be reached with Tab and opened with Enter or Space, with a visible focus outline.
+- A failure of **Mark calls as read** is logged instead of raising an unhandled error.
+- The README says that the devices count is the one value that does not open a more-info dialog.
+
+### Maintenance
+- CI hardened: actions pinned by commit SHA, read-only token permissions, Dependabot for action updates, duplication report annotated on pull requests.
+- Unit tests (`npm test`, run in CI); discovery cached on the registries instead of being recomputed on every state change.
+
 ## 1.5.2
 
 ### Maintenance
