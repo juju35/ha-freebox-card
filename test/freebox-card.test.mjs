@@ -96,3 +96,26 @@ test("an unrelated state change keeps the render signature", () => {
   assert.ok(sameSig(before, make({ ...states, "light.kitchen": st("on") })._signature()));
   assert.ok(!sameSig(before, make({ ...states, "sensor.down": { ...states["sensor.down"], state: "5" } })._signature()));
 });
+
+test("the model is detected from the device and can be forced with the model option", () => {
+  const { boxModel, MODELS } = load("freebox-card.js", ["boxModel", "MODELS"]);
+  const box = (dev) => ({ device: dev });
+  assert.equal(boxModel(box(devices.router), {}).id, "ultra");
+  assert.equal(boxModel(box({ model_id: "fbxgw8-r1" }), {}).id, "pop");
+  assert.equal(boxModel(box({ name: "Freebox v7 (r1)" }), {}).id, "delta");
+  assert.equal(boxModel(box({ model: "Freebox Server Mini 4K" }), {}).id, "mini_4k");
+  assert.equal(boxModel(box({ model_id: "fbxgw-r2" }), {}).id, "revolution");
+  assert.equal(boxModel(box({ name: "Some router" }), {}), undefined);
+  assert.equal(boxModel(box(devices.router), { model: "revolution" }).name, "Freebox Revolution");
+  assert.equal(boxModel(box(devices.router), { model: "unknown" }).id, "ultra");
+  assert.equal(MODELS.map((m) => m.id).join(), "ultra,pop,delta,revolution,mini_4k");
+});
+
+test("every model has its picture in the build", async () => {
+  const { MODELS, IMG_BOX } = load("freebox-card.js", ["MODELS", "IMG_BOX"]);
+  const { existsSync } = await import("node:fs");
+  for (const m of MODELS) {
+    assert.equal(IMG_BOX[m.id], `__IMG_BOX_${m.id.toUpperCase()}__`);
+    assert.ok(existsSync(new URL(`../images/freebox-${m.id.replace(/_/g, "-")}.webp`, import.meta.url)), m.id);
+  }
+});

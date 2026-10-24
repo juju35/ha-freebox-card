@@ -6,7 +6,7 @@
 [![Release](https://img.shields.io/github/v/release/juju35/ha-freebox-card)](https://github.com/juju35/ha-freebox-card/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-<p align="center"><img src="images/free.png" alt="Free" width="160"><br><img src="images/freebox.png" alt="Freebox" width="320"></p>
+<p align="center"><img src="images/free.png" alt="Free" width="160"><br><img src="images/freebox-ultra.png" alt="Freebox" width="320"></p>
 
 Lovelace cards for Home Assistant to monitor a Freebox: download / upload rates, connection, temperatures, fans, storage, Wi-Fi, missed calls and connected devices at a glance.
 
@@ -22,7 +22,7 @@ The cards are built on top of the [Freebox integration](https://www.home-assista
 
 - Two cards: a full **Freebox Card** and a compact **Freebox Mini Card**
 - Automatic discovery of the Freebox integration entities, whatever the language of the entity ids (several Freebox supported)
-- Commercial model name (Freebox Ultra, Pop, Delta, Revolution, mini 4K) and firmware version
+- Picture and commercial name of the Freebox model (Ultra, Pop, Delta, Revolution, mini 4K), detected automatically or set with the `model` option, and firmware version
 - Connection status and type (FTTH, xDSL…), public IPv4 (IPv6 on hover) and uptime
 - Download / upload rates, in bytes (kB/s, MB/s) or bits (kb/s, Mb/s)
 - Temperature gauges and fans speed
@@ -34,7 +34,7 @@ The cards are built on top of the [Freebox integration](https://www.home-assista
 - Click the Free logo to open free.fr, and the Freebox picture to open the Freebox OS admin interface
 - Visual editor in the dashboard UI for both cards (no YAML needed)
 - Light and dark mode, English and French
-- Single file, no external dependency, the Freebox picture and the Free logo are embedded
+- Single file, no external dependency, the Freebox pictures and the Free logo are embedded
 
 ## Prerequisites
 
@@ -92,6 +92,7 @@ type: custom:freebox-mini-card
 type: custom:freebox-card
 box: 0123456789abcdef0123456789abcdef
 title: My Freebox
+model: delta
 admin_url: https://mafreebox.freebox.fr
 show_image: true
 show_logo: true
@@ -107,6 +108,7 @@ language: fr
 type: custom:freebox-mini-card
 box: 0123456789abcdef0123456789abcdef
 title: My Freebox
+model: delta
 admin_url: https://mafreebox.freebox.fr
 show_image: true
 show_logo: true
@@ -122,6 +124,7 @@ language: fr
 |---|---|---|---|
 | `box` | both | First Freebox found | Freebox to display: its device id (only needed with several Freebox, pick it in the visual editor) |
 | `title` | both | Freebox model | Card title |
+| `model` | both | Detected | Freebox model, for its picture and the default title: `ultra`, `pop`, `delta`, `revolution` or `mini_4k` (see [Supported models](#supported-models)) |
 | `admin_url` | both | `https://mafreebox.freebox.fr` | Freebox OS address opened when clicking the Freebox picture (for example `http://192.168.1.254`) |
 | `show_image` | both | `true` | Show the Freebox picture |
 | `show_logo` | both | `true` | Show the Free logo (opens free.fr when clicked) |
@@ -131,6 +134,15 @@ language: fr
 | `show_services` | full | `true` | Wi-Fi, missed calls and connected devices |
 | `rate_unit` | both | `bytes` | Rates unit: `bytes` (kB/s, MB/s) or `bits` (kb/s, Mb/s) |
 | `language` | both | Auto | Force language: `fr` or `en` (auto-detects from HA settings) |
+
+## Supported models
+
+The models supported by the [Freebox integration](https://www.home-assistant.io/integrations/freebox/) (Freebox OS). The model is detected from the Freebox device (model id such as `fbxgw9-r1`); set `model` to force another picture, for example when the detection fails. Without a detected model or `model` option, the card shows the Freebox Ultra picture.
+
+| Freebox Ultra | Freebox Pop | Freebox Delta | Freebox Revolution | Freebox mini 4K |
+|:---:|:---:|:---:|:---:|:---:|
+| <img src="images/freebox-ultra.png" alt="Freebox Ultra" width="140"> | <img src="images/freebox-pop.png" alt="Freebox Pop" width="140"> | <img src="images/freebox-delta.png" alt="Freebox Delta" width="140"> | <img src="images/freebox-revolution.png" alt="Freebox Revolution" width="140"> | <img src="images/freebox-mini-4k.png" alt="Freebox mini 4K" width="140"> |
+| `ultra` (v9) | `pop` (v8) | `delta` (v7) | `revolution` (v6) | `mini_4k` |
 
 ## Screenshots
 
