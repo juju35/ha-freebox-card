@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.6.1
+
+### Changes
+- Running Home Assistant in Docker: start the container with `TZ` set to the time zone of Home Assistant (for example `-e TZ=Europe/Paris`), otherwise the uptime is off by the UTC offset. The README now documents this limit (the integration gives the boot date without a time zone); Home Assistant OS and Supervised are not affected.
+- The README explains that, with a single Freebox, "Devices x / y" also counts the client trackers that have no device of their own.
+
+### Fixes
+- When a list changes order (temperatures, fans, partitions, service tiles, mini card footer), the keyboard focus stays on the same item instead of landing on another row. In browsers that cannot move an element without losing its focus, the focus is dropped rather than moved to another row.
+- The README screenshots show the right uptime.
+
+### Maintenance
+- Browser tests (Chromium) for the in-place updates, run in CI; screenshots taken with a fixed clock and a fresh page per capture; duplication check skips the tests.
+
 ## 1.6.0
 
 ### Fixes
