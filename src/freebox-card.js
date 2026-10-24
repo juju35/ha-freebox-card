@@ -8,7 +8,14 @@
  */
 
 const VERSION = "__VERSION__";
-const IMG_BOX = "__IMG_BOX__";
+// Pictures of the Freebox models, inlined by scripts/build.mjs from images/freebox-<model>.webp.
+const IMG_BOX = {
+  ultra: "__IMG_BOX_ULTRA__",
+  pop: "__IMG_BOX_POP__",
+  delta: "__IMG_BOX_DELTA__",
+  revolution: "__IMG_BOX_REVOLUTION__",
+  mini_4k: "__IMG_BOX_MINI_4K__",
+};
 const IMG_LOGO = "__IMG_LOGO__";
 const FREE_URL = "https://www.free.fr";
 const ADMIN_URL = "https://mafreebox.freebox.fr";
@@ -66,6 +73,8 @@ const STRINGS = {
     // Editor
     box: "Freebox (Freebox integration device)",
     title: "Title (optional, defaults to the Freebox model)",
+    model: "Freebox model (picture and default title)",
+    model_auto: "Automatic",
     show_image: "Show Freebox picture",
     admin: "Open Freebox OS",
     admin_url: "Freebox OS address (optional, opened when clicking the picture)",
@@ -112,6 +121,8 @@ const STRINGS = {
     unknown_box: "Freebox introuvable",
     box: "Freebox (appareil de l'intégration Freebox)",
     title: "Titre (facultatif, modèle de la Freebox par défaut)",
+    model: "Modèle de la Freebox (photo et titre par défaut)",
+    model_auto: "Automatique",
     show_image: "Afficher la photo de la Freebox",
     admin: "Ouvrir Freebox OS",
     admin_url: "Adresse de Freebox OS (facultatif, ouverte au clic sur la photo)",
@@ -133,13 +144,14 @@ const RATE_UNITS = {
   fr: { bytes: ["o/s", "ko/s", "Mo/s", "Go/s"], bits: ["b/s", "kb/s", "Mb/s", "Gb/s"] },
 };
 
-// Commercial names of the Freebox models, from the model id (fbxgw9-r1) or the pretty name (Freebox v9 (r1)).
+// Freebox models supported by the Freebox integration (Freebox OS), with their commercial name, detected
+// from the model id (fbxgw9-r1) or the pretty name (Freebox v9 (r1)). The `model` option forces one by id.
 const MODELS = [
-  [/fbxgw9|v9\b/i, "Freebox Ultra"],
-  [/fbxgw8|v8\b/i, "Freebox Pop"],
-  [/fbxgw7|v7\b/i, "Freebox Delta"],
-  [/fbxgw2|mini/i, "Freebox mini 4K"],
-  [/fbxgw-r|v6\b/i, "Freebox Revolution"],
+  { id: "ultra", name: "Freebox Ultra", re: /fbxgw9|v9\b/i },
+  { id: "pop", name: "Freebox Pop", re: /fbxgw8|v8\b/i },
+  { id: "delta", name: "Freebox Delta", re: /fbxgw7|v7\b/i },
+  { id: "revolution", name: "Freebox Revolution", re: /fbxgw-r|v6\b/i },
+  { id: "mini_4k", name: "Freebox mini 4K", re: /fbxgw2|mini/i },
 ];
 
 // ---------------------------------------------------------------------------
@@ -428,13 +440,15 @@ const discover = (hass, boxId) => {
   return box;
 };
 
-/** Commercial name of the Freebox ("Freebox Ultra"), else its device name. */
-const modelName = (box) => {
-  const dev = box.device;
+/** Model of the Freebox detected from its device, or undefined. */
+const detectModel = (box) => {
+  const dev = box?.device;
   const ids = [dev?.model_id, dev?.hw_version, dev?.model, dev?.name].filter(Boolean).join(" ");
-  for (const [re, name] of MODELS) if (re.test(ids)) return name;
-  return deviceName(dev) || "Freebox";
+  return ids ? MODELS.find((m) => m.re.test(ids)) : undefined;
 };
+
+/** Model of the Freebox: the one set with the `model` option, else the detected one. */
+const boxModel = (box, config) => MODELS.find((m) => m.id === config?.model) ?? detectModel(box);
 
 /** Label of a partition: its friendly name without the device name and the "free space" words. */
 const partitionLabel = (hass, p) =>
@@ -605,7 +619,8 @@ class FreeboxBase extends HTMLElement {
     const router = this._s(box.scalars.router);
     const firmware = box.device?.sw_version || router?.attributes?.firmware_version;
     const devName = deviceName(box.device);
-    const name = c.title || modelName(box);
+    const model = boxModel(box, c);
+    const name = c.title || model?.name || deviceName(box.device) || "Freebox";
     const adminUrl = /^https?:\/\//i.test(c.admin_url || "") ? c.admin_url : ADMIN_URL;
     const sub = [devName && devName !== name ? devName : null, firmware ? `${this._t("firmware")} ${firmware}` : null]
       .filter(Boolean)
@@ -626,7 +641,9 @@ class FreeboxBase extends HTMLElement {
           c.show_image !== false
             ? `<a class="box-link" href="${esc(adminUrl)}" target="_blank" rel="noopener noreferrer" title="${esc(
                 this._t("admin")
-              )}"><img class="box" src="${IMG_BOX}" alt="Freebox"></a>`
+              )}"><img class="box" src="${IMG_BOX[model?.id] ?? IMG_BOX.ultra}" alt="${esc(
+                model?.name || "Freebox"
+              )}"></a>`
             : ""
         }
       </div>`;
@@ -983,12 +1000,23 @@ class FreeboxEditorBase extends HTMLElement {
   _schema() {
     const boxOptions = this._hass ? listBoxes(this._hass) : [];
     const tr = (k) => t(this._hass, this._config, k);
+    const detected = this._hass ? detectModel(discover(this._hass, this._config.box)) : undefined;
+    const autoModel = detected ? `${tr("model_auto")} (${detected.name})` : tr("model_auto");
     return [
       {
         name: "box",
         selector: { select: { mode: "dropdown", custom_value: true, options: boxOptions } },
       },
       { name: "title", selector: { text: {} } },
+      {
+        name: "model",
+        selector: {
+          select: {
+            mode: "dropdown",
+            options: [{ value: "", label: autoModel }, ...MODELS.map((m) => ({ value: m.id, label: m.name }))],
+          },
+        },
+      },
       { name: "admin_url", selector: { text: { type: "url" } } },
       {
         type: "grid",
@@ -1045,7 +1073,7 @@ class FreeboxEditorBase extends HTMLElement {
       });
       this.appendChild(this._form);
     }
-    const data = { rate_unit: "bytes", ...this._config };
+    const data = { rate_unit: "bytes", model: "", ...this._config };
     for (const name of ["show_image", "show_logo", ...this.constructor.toggles]) if (data[name] === undefined) data[name] = true;
     if (!data.box && this._hass) data.box = listBoxes(this._hass)[0]?.value;
     this._form.hass = this._hass;

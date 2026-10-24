@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.0
+
+### New
+- Pictures of every Freebox model supported by the Freebox integration: Ultra, Pop, Delta, Revolution and mini 4K. The card shows the picture of the detected model instead of always the Freebox Ultra.
+- `model` option (`ultra`, `pop`, `delta`, `revolution`, `mini_4k`) to choose the model, for its picture and the default title; in the visual editor, the **Freebox model** dropdown defaults to **Automatic** and shows the detected model.
+
 ## 1.6.1
 
 ### Changes
