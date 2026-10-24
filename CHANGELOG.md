@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.1
+
+### Changes
+- The README header no longer shows the Freebox Ultra picture, whatever the model: the pictures of every model are in the **Supported models** section.
+
 ## 1.7.0
 
 ### New
