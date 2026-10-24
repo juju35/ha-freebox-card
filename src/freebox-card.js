@@ -206,17 +206,75 @@ const fmtUptime = (sec, hass, config) => {
   return `${m} ${t(hass, config, "minutes")}`;
 };
 
+/** Offset of a time zone from UTC at a given instant, in minutes ("Europe/Paris" in summer -> 120). */
+const tzOffset = (timeZone, ms) => {
+  const name = new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "longOffset" })
+    .formatToParts(new Date(ms))
+    .find((p) => p.type === "timeZoneName")?.value;
+  const m = /GMT([+-])(\d{1,2})(?::?(\d{2}))?/.exec(name || "");
+  return m ? (m[1] === "-" ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] || 0)) : 0;
+};
+
+/**
+ * Parse a date. The Freebox integration exposes a naive datetime (no UTC offset) in the time zone of
+ * Home Assistant, so such a date is read in timeZone (hass.config.time_zone), not in the browser's.
+ */
+const parseDate = (raw, timeZone) => {
+  const str = String(raw).trim().replace(" ", "T");
+  const naive = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(str);
+  if (!naive || !timeZone) return Date.parse(str);
+  const asUtc = Date.parse(`${str}Z`);
+  if (!Number.isFinite(asUtc)) return Number.NaN;
+  try {
+    // Second pass: the offset of the resulting instant, right around daylight saving time changes.
+    const first = asUtc - tzOffset(timeZone, asUtc) * 60e3;
+    return asUtc - tzOffset(timeZone, first) * 60e3;
+  } catch {
+    return Date.parse(str);
+  }
+};
+
 /** Seconds since the boot date exposed by the router device tracker ("uptime" attribute). */
-const uptimeSec = (tracker) => {
+const uptimeSec = (tracker, timeZone) => {
   const raw = tracker?.attributes?.uptime;
   if (!raw) return null;
-  const ms = Date.parse(raw);
+  const ms = parseDate(raw, timeZone);
   return Number.isFinite(ms) ? Math.max(0, (Date.now() - ms) / 1000) : null;
 };
 
 const level = (v, warn, crit) => (v === null ? "" : v >= crit ? "crit" : v >= warn ? "warn" : "ok");
 
 const svgIcon = (path, cls = "") => `<svg class="icon ${cls}" viewBox="0 0 24 24"><path d="${path}"/></svg>`;
+
+// Same values, compared by identity: used to skip a render when nothing the card shows has changed.
+const sameSig = (a, b) => !!a && !!b && a.length === b.length && a.every((v, i) => v === b[i]);
+
+// Patch the shadow DOM in place from the new HTML: nodes whose tag is unchanged are kept, so keyboard
+// focus, hover, the embedded pictures and CSS transitions (bars, rings) survive an update, and only the
+// changed text and attributes are written.
+const patchAttrs = (cur, next) => {
+  for (const { name } of [...cur.attributes]) if (!next.hasAttribute(name)) cur.removeAttribute(name);
+  for (const { name, value } of next.attributes) if (cur.getAttribute(name) !== value) cur.setAttribute(name, value);
+};
+const patchChildren = (cur, next) => {
+  const old = [...cur.childNodes];
+  const fresh = [...next.childNodes];
+  fresh.forEach((n, i) => {
+    const o = old[i];
+    if (!o) cur.appendChild(n);
+    else if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName) cur.replaceChild(n, o);
+    else if (n.nodeType === 1) {
+      patchAttrs(o, n);
+      patchChildren(o, n);
+    } else if (o.nodeValue !== n.nodeValue) o.nodeValue = n.nodeValue;
+  });
+  for (let i = fresh.length; i < old.length; i++) cur.removeChild(old[i]);
+};
+const morph = (root, html) => {
+  const tpl = document.createElement("template");
+  tpl.innerHTML = html;
+  patchChildren(root, tpl.content);
+};
 
 const fireMoreInfo = (node, entityId) => {
   if (!entityId) return;
@@ -228,6 +286,7 @@ const fireMoreInfo = (node, entityId) => {
 // ---------------------------------------------------------------------------
 
 const _cache = new WeakMap();
+const _entries = new WeakMap();
 
 const deviceName = (dev) => dev && (dev.name_by_user || dev.name);
 
@@ -247,8 +306,16 @@ const tail = (hass, id) => {
 };
 
 /** Freebox registry entries, or [] when the registry is not exposed. */
-const registry = (hass) =>
-  hass.entities ? Object.values(hass.entities).filter((e) => e.platform === "freebox" && !e.hidden && hass.states[e.entity_id]) : [];
+const registry = (hass) => {
+  if (!hass.entities) return [];
+  // The scan of the whole registry is cached on hass.entities, replaced only when the registry changes.
+  let all = _entries.get(hass.entities);
+  if (!all) {
+    all = Object.values(hass.entities).filter((e) => e.platform === "freebox" && !e.hidden);
+    _entries.set(hass.entities, all);
+  }
+  return all.filter((e) => hass.states[e.entity_id]);
+};
 
 /** List the Freebox routers: the devices of the "Download speed" sensors. */
 const listBoxes = (hass) => {
@@ -262,18 +329,26 @@ const listBoxes = (hass) => {
 
 const emptyBox = () => ({ id: null, device: null, scalars: {}, temps: [], fans: [], partitions: [], raids: [], trackers: [] });
 
-/** Map the entities of one Freebox to a structured object of entity ids. */
+/**
+ * Map the entities of one Freebox to a structured object of entity ids. The result is cached on the
+ * registries (hass.entities, hass.devices) and the list of Freebox entities that have a state, not on
+ * hass.states, which Home Assistant replaces on every state change.
+ */
 const discover = (hass, boxId) => {
-  let byBox = _cache.get(hass.states);
+  const found = registry(hass);
+  const holder = hass.entities || hass.states;
+  let byBox = _cache.get(holder);
   if (!byBox) {
     byBox = new Map();
-    _cache.set(hass.states, byBox);
+    _cache.set(holder, byBox);
   }
   const key = boxId || "";
-  if (byBox.has(key)) return byBox.get(key);
+  const stamp = found.map((e) => e.entity_id).join(",");
+  const hit = byBox.get(key);
+  if (hit && hit.devices === hass.devices && hit.stamp === stamp) return hit.box;
 
   const box = emptyBox();
-  const entries = registry(hass).sort((a, b) => a.entity_id.localeCompare(b.entity_id));
+  const entries = found.sort((a, b) => a.entity_id.localeCompare(b.entity_id));
   if (entries.length && hass.devices) {
     const routers = listBoxes(hass).map((b) => b.value);
     const router = boxId ? (routers.includes(boxId) ? boxId : null) : routers[0];
@@ -292,7 +367,9 @@ const discover = (hass, boxId) => {
         const sameEntry = d && (d.config_entries || []).some((c) => entryIds.has(c));
         if (domain === "device_tracker") {
           if (own) box.scalars.router = id;
-          else if (sameEntry) box.trackers.push(id);
+          // Most client trackers have no device (Home Assistant gives one only when another integration
+          // registered the MAC address): with a single Freebox, they belong to it.
+          else if (sameEntry || (!e.device_id && routers.length === 1)) box.trackers.push(id);
           continue;
         }
         if (!own && !child) continue;
@@ -323,7 +400,7 @@ const discover = (hass, boxId) => {
     }
     if (box.scalars.rate_down) box.id = "freebox";
   }
-  byBox.set(key, box);
+  byBox.set(key, { devices: hass.devices, stamp, box });
   return box;
 };
 
@@ -351,6 +428,7 @@ const BASE_STYLE = `
   .icon { width: 18px; height: 18px; fill: currentColor; flex: none; }
   .muted { color: var(--secondary-text-color); }
   .clickable { cursor: pointer; }
+  [role="button"]:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 2px; }
   .ok { --c: var(--fb-ok); } .warn { --c: var(--fb-warn); } .crit { --c: var(--fb-crit); } .off { --c: var(--disabled-text-color, #9e9e9e); }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--fb-ok)); flex: none; display: inline-block; }
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;
@@ -389,17 +467,31 @@ class FreeboxBase extends HTMLElement {
       const path = ev.composedPath();
       const press = path.find((n) => n.dataset?.press);
       if (press) {
-        this._hass?.callService("button", "press", { entity_id: press.dataset.press });
+        // A failed call is logged (Home Assistant already shows a toast) instead of left unhandled.
+        Promise.resolve()
+          .then(() => this._hass?.callService("button", "press", { entity_id: press.dataset.press }))
+          .catch((err) => console.error("freebox-card: button.press failed", err));
         return;
       }
       const el = path.find((n) => n.dataset?.entity);
       if (el) fireMoreInfo(this, el.dataset.entity);
     });
+    // Keyboard access: Enter or Space on a focusable non-button element acts as a click.
+    this.shadowRoot.addEventListener("keydown", (ev) => {
+      if ((ev.key === "Enter" || ev.key === " ") && ev.target.getAttribute?.("role") === "button") {
+        ev.preventDefault();
+        ev.target.click();
+      }
+    });
   }
 
   set hass(hass) {
     this._hass = hass;
-    this._update();
+    if (!this._config) return;
+    // Render only when a state the card shows has changed, not on every state change of Home Assistant.
+    const sig = this._signature();
+    if (sameSig(sig, this._sig)) return;
+    this._update(sig);
   }
 
   get hass() {
@@ -425,12 +517,37 @@ class FreeboxBase extends HTMLElement {
     return fmtRate(toBps(this._s(id)), this._hass, this._config);
   }
 
-  _update() {
+  _uptime(router) {
+    return uptimeSec(router, this._hass.config?.time_zone);
+  }
+
+  // What the render depends on: registries, language, the states of the Freebox entities and the
+  // minute, for the uptime shown in days, hours and minutes.
+  _signature() {
+    const h = this._hass;
+    const sig = [h.entities, h.devices, h.language, h.locale?.language, h.config?.time_zone];
+    const box = discover(h, this._config.box);
+    if (!box.id) return sig;
+    const ids = [
+      ...Object.values(box.scalars),
+      ...box.temps.map((x) => x.id),
+      ...box.fans.map((x) => x.id),
+      ...box.partitions.map((x) => x.id),
+      ...box.raids,
+      ...box.trackers,
+    ];
+    for (const id of ids) sig.push(h.states[id]);
+    if (this._s(box.scalars.router)?.attributes?.uptime) sig.push(Math.floor(Date.now() / 60e3));
+    return sig;
+  }
+
+  _update(sig) {
     if (!this._hass || !this._config) return;
+    this._sig = sig ?? this._signature();
     const html = this._render();
     if (html !== this._html) {
       this._html = html;
-      this.shadowRoot.innerHTML = html;
+      morph(this.shadowRoot, html);
     }
   }
 
@@ -442,7 +559,7 @@ class FreeboxBase extends HTMLElement {
       const online = router.state === "home";
       const type = router.attributes.connection_type;
       chips.push(
-        `<span class="chip clickable ${online ? "ok" : "crit"}" data-entity="${router.entity_id}"><span class="dot"></span>${esc(
+        `<span class="chip clickable ${online ? "ok" : "crit"}" role="button" tabindex="0" data-entity="${router.entity_id}"><span class="dot"></span>${esc(
           online ? this._t("online") : this._t("offline")
         )}${type ? ` · ${esc(String(type).toUpperCase())}` : ""}</span>`
       );
@@ -451,7 +568,7 @@ class FreeboxBase extends HTMLElement {
     if (wifi) {
       const on = wifi.state === "on";
       chips.push(
-        `<span class="chip clickable ${on ? "ok" : "off"}" data-entity="${wifi.entity_id}">${svgIcon(on ? ICONS.wifi : ICONS.wifi_off)}${esc(
+        `<span class="chip clickable ${on ? "ok" : "off"}" role="button" tabindex="0" data-entity="${wifi.entity_id}">${svgIcon(on ? ICONS.wifi : ICONS.wifi_off)}${esc(
           on ? this._t("wifi_on") : this._t("wifi_off")
         )}</span>`
       );
@@ -594,21 +711,21 @@ class FreeboxCard extends FreeboxBase {
     const sc = box.scalars;
     if (!sc.rate_down && !sc.rate_up) return "";
     const tile = (id, cls, icon, k) =>
-      `<div class="tile clickable ${cls}" data-entity="${id || ""}">${svgIcon(icon)}<div><div class="k">${k}</div><div class="v">${this._rate(
+      `<div class="tile clickable ${cls}" role="button" tabindex="0" data-entity="${id || ""}">${svgIcon(icon)}<div><div class="k">${k}</div><div class="v">${this._rate(
         id
       )}</div></div></div>`;
     const router = this._s(sc.router);
     const facts = [];
     if (router?.attributes?.IPv4)
       facts.push(
-        `<span class="clickable" data-entity="${router.entity_id}" title="${esc(router.attributes.IPv6 || "")}">${svgIcon(ICONS.ip)}${esc(
+        `<span class="clickable" role="button" tabindex="0" data-entity="${router.entity_id}" title="${esc(router.attributes.IPv6 || "")}">${svgIcon(ICONS.ip)}${esc(
           router.attributes.IPv4
         )}</span>`
       );
-    const up = uptimeSec(router);
+    const up = this._uptime(router);
     if (up !== null)
       facts.push(
-        `<span class="clickable" data-entity="${router.entity_id}">${svgIcon(ICONS.timer)}${this._t("uptime")} ${fmtUptime(
+        `<span class="clickable" role="button" tabindex="0" data-entity="${router.entity_id}">${svgIcon(ICONS.timer)}${this._t("uptime")} ${fmtUptime(
           up,
           this._hass,
           this._config
@@ -635,7 +752,7 @@ class FreeboxCard extends FreeboxBase {
       .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
     const gauges = temps.map(({ id, name, label }) => {
       const v = num(this._s(id));
-      return `<div class="gauge clickable ${level(v, 75, 90)}" data-entity="${id}" title="${esc(name)}">
+      return `<div class="gauge clickable ${level(v, 75, 90)}" role="button" tabindex="0" data-entity="${id}" title="${esc(name)}">
         ${ring(v)}
         <div class="val"><b>${v === null ? "—" : `${Math.round(v)}°`}</b></div>
         <div class="lbl">${esc(label)}</div>
@@ -643,7 +760,7 @@ class FreeboxCard extends FreeboxBase {
     });
     const fans = box.fans.map(({ id, name }) => {
       const rpm = num(this._s(id));
-      return `<div class="tile clickable" data-entity="${id}">${svgIcon(ICONS.fan, rpm ? "spin" : "")}<div><div class="k">${esc(
+      return `<div class="tile clickable" role="button" tabindex="0" data-entity="${id}">${svgIcon(ICONS.fan, rpm ? "spin" : "")}<div><div class="k">${esc(
         name
       )}</div><div class="v">${rpm === null ? "—" : `${Math.round(rpm)} rpm`}</div></div></div>`;
     });
@@ -659,7 +776,7 @@ class FreeboxCard extends FreeboxBase {
       const free = num(this._s(p.id));
       const used = free === null ? null : Math.max(0, Math.min(100, 100 - free));
       const cls = level(used, 80, 90);
-      return `<div class="part clickable ${cls}" data-entity="${p.id}">
+      return `<div class="part clickable ${cls}" role="button" tabindex="0" data-entity="${p.id}">
         <div class="row"><span class="dot ${cls || "ok"}"></span><span class="grow">${esc(partitionLabel(this._hass, p))}</span>
           <span class="muted">${esc(p.device?.model || "")}</span></div>
         <div class="bar"><div style="width:${used ?? 0}%"></div></div>
@@ -669,7 +786,7 @@ class FreeboxCard extends FreeboxBase {
     });
     for (const id of box.raids) {
       const degraded = this._s(id)?.state === "on";
-      rows.push(`<div class="row clickable" data-entity="${id}"><span class="dot ${degraded ? "crit" : "ok"}"></span>
+      rows.push(`<div class="row clickable" role="button" tabindex="0" data-entity="${id}"><span class="dot ${degraded ? "crit" : "ok"}"></span>
         <span class="grow">${esc(shortName(this._hass, id, box.device))}</span>
         <span class="chip ${degraded ? "crit" : "ok"}">${this._t(degraded ? "raid_degraded" : "raid_ok")}</span></div>`);
     }
@@ -683,7 +800,7 @@ class FreeboxCard extends FreeboxBase {
     const wifi = this._s(sc.wifi);
     if (wifi) {
       const on = wifi.state === "on";
-      tiles.push(`<div class="tile svc clickable ${on ? "ok" : ""}" data-entity="${wifi.entity_id}">${svgIcon(
+      tiles.push(`<div class="tile svc clickable ${on ? "ok" : ""}" role="button" tabindex="0" data-entity="${wifi.entity_id}">${svgIcon(
         on ? ICONS.wifi : ICONS.wifi_off
       )}<div><div class="k">${this._t("wifi")}</div><div class="v">${this._t(on ? "on" : "off")}</div></div></div>`);
     }
@@ -696,7 +813,7 @@ class FreeboxCard extends FreeboxBase {
             this._t("mark_read")
           )}">${svgIcon(ICONS.check)}</button>`
         : "";
-      tiles.push(`<div class="tile svc clickable ${n > 0 ? "warn" : ""}" data-entity="${missed.entity_id}">${svgIcon(
+      tiles.push(`<div class="tile svc clickable ${n > 0 ? "warn" : ""}" role="button" tabindex="0" data-entity="${missed.entity_id}">${svgIcon(
         n > 0 ? ICONS.phone_missed : ICONS.phone
       )}<div><div class="k">${this._t("calls")}</div><div class="v">${n} ${this._t("missed")}</div></div>${reset}</div>`);
     }
@@ -763,7 +880,7 @@ class FreeboxMiniCard extends FreeboxBase {
     const parts = [];
     if (c.show_network !== false && (sc.rate_down || sc.rate_up)) {
       const tile = (id, cls, icon, k) =>
-        `<div class="tile clickable ${cls}" data-entity="${id || ""}">${svgIcon(icon)}<div><div class="k">${k}</div><div class="v">${this._rate(
+        `<div class="tile clickable ${cls}" role="button" tabindex="0" data-entity="${id || ""}">${svgIcon(icon)}<div><div class="k">${k}</div><div class="v">${this._rate(
           id
         )}</div></div></div>`;
       parts.push(`<div class="grid2">${tile(sc.rate_down, "down", ICONS.down, this._t("download"))}${tile(
@@ -777,7 +894,7 @@ class FreeboxMiniCard extends FreeboxBase {
     const router = this._s(sc.router);
     if (router) {
       const online = router.state === "home";
-      foot.push(`<span class="clickable ${online ? "ok" : "crit"}" data-entity="${router.entity_id}"><span class="dot"></span>&nbsp;${esc(
+      foot.push(`<span class="clickable ${online ? "ok" : "crit"}" role="button" tabindex="0" data-entity="${router.entity_id}"><span class="dot"></span>&nbsp;${esc(
         String(router.attributes.connection_type || this._t(online ? "online" : "offline")).toUpperCase()
       )}</span>`);
     }
@@ -788,13 +905,13 @@ class FreeboxMiniCard extends FreeboxBase {
         if (v !== null && (!hottest || v > hottest.v)) hottest = { v, id: tmp.id };
       }
       if (hottest)
-        foot.push(`<span class="clickable ${level(hottest.v, 75, 90)}" data-entity="${hottest.id}">${svgIcon(ICONS.temp)}${Math.round(
+        foot.push(`<span class="clickable ${level(hottest.v, 75, 90)}" role="button" tabindex="0" data-entity="${hottest.id}">${svgIcon(ICONS.temp)}${Math.round(
           hottest.v
         )}°C</span>`);
     }
     const wifi = this._s(sc.wifi);
     if (wifi)
-      foot.push(`<span class="clickable ${wifi.state === "on" ? "ok" : ""}" data-entity="${wifi.entity_id}">${svgIcon(
+      foot.push(`<span class="clickable ${wifi.state === "on" ? "ok" : ""}" role="button" tabindex="0" data-entity="${wifi.entity_id}">${svgIcon(
         wifi.state === "on" ? ICONS.wifi : ICONS.wifi_off
       )}${this._t("wifi")}</span>`);
     const missed = this._s(sc.missed);
@@ -805,9 +922,9 @@ class FreeboxMiniCard extends FreeboxBase {
             this._t("mark_read")
           )}">${svgIcon(ICONS.check)}</button>`
         : "";
-      foot.push(`<span class="clickable warn" data-entity="${missed.entity_id}">${svgIcon(ICONS.phone_missed)}${num(missed)}${reset}</span>`);
+      foot.push(`<span class="clickable warn" role="button" tabindex="0" data-entity="${missed.entity_id}">${svgIcon(ICONS.phone_missed)}${num(missed)}${reset}</span>`);
     }
-    const up = uptimeSec(router);
+    const up = this._uptime(router);
     if (up !== null) foot.push(`<span>${svgIcon(ICONS.timer)}${fmtUptime(up, this._hass, this._config)}</span>`);
     return `<style>${BASE_STYLE}${MINI_STYLE}</style>
       <ha-card>
