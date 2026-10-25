@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.8.0
+
+### New
+- Detail button at the top right of the **Freebox Mini Card**: it shows the full Freebox card in place of the mini card (same Freebox and options, every section), and the collapse button brings the compact view back. A click anywhere outside the card folds it back too; a click inside it, or in a dialog opened from it (more-info), does not. From the keyboard, the focus stays on the button.
+- `zoom` option of the mini card (on by default; `zoom: false` removes the button), with its switch in the visual editor (**Detail button**).
+- The card size given to the dashboard follows the view shown.
+
+### Maintenance
+- Browser test of the detail button; screenshots of the zoomed-in mini card.
+
 ## 1.7.2
 
 ### Fixes

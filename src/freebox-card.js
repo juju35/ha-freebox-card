@@ -36,6 +36,9 @@ const ICONS = {
   phone_missed: "M23.71,16.67C20.66,13.77 16.54,12 12,12C7.46,12 3.34,13.77 0.29,16.67C0.11,16.85 0,17.1 0,17.38C0,17.66 0.11,17.9 0.29,18.08L2.77,20.56C2.95,20.74 3.2,20.85 3.5,20.85C3.75,20.85 4,20.75 4.18,20.57C4.97,19.83 5.86,19.21 6.84,18.71C7.17,18.55 7.4,18.21 7.4,17.81V14.71C8.85,14.24 10.39,14 12,14C13.6,14 15.15,14.24 16.6,14.72V17.82C16.6,18.22 16.83,18.56 17.16,18.72C18.14,19.21 19.04,19.84 19.82,20.58C20,20.76 20.25,20.86 20.5,20.86C20.8,20.86 21.05,20.75 21.23,20.57L23.71,18.09C23.89,17.91 24,17.66 24,17.38C24,17.1 23.89,16.85 23.71,16.67M6.5,5.5L12,11L19,4L18,3L12,9L7.5,4.5H11V3H5V9H6.5V5.5Z",
   database: "M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z",
   chip: "M6,4H18V5H21V7H18V9H21V11H18V13H21V15H18V17H21V19H18V20H6V19H3V17H6V15H3V13H6V11H3V9H6V7H3V5H6V4M11,15V18H12V15H11M13,15V18H14V15H13M15,15V18H16V15H15Z",
+  // mdi:arrow-expand / mdi:arrow-collapse: the detail button of the mini card.
+  expand: "M10,21V19H6.41L10.91,14.5L9.5,13.09L5,17.59V14H3V21H10M14.5,10.91L19,6.41V10H21V3H14V5H17.59L13.09,9.5L14.5,10.91Z",
+  collapse: "M19.5,3.09L15,7.59V4H13V11H20V9H16.41L20.91,4.5L19.5,3.09M4,13V15H7.59L3.09,19.5L4.5,20.91L9,16.41V20H11V13H4Z",
   services: "M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z",
 };
 
@@ -70,6 +73,8 @@ const STRINGS = {
     minutes: "min",
     no_box: "No Freebox entities found. Is the Freebox integration installed?",
     unknown_box: "Freebox not found",
+    zoom_in: "Show the full card",
+    zoom_out: "Back to the compact view",
     // Editor
     box: "Freebox (Freebox integration device)",
     title: "Title (optional, defaults to the Freebox model)",
@@ -83,6 +88,8 @@ const STRINGS = {
     show_system: "Show system (temperatures, fans)",
     show_storage: "Show storage",
     show_services: "Show services (Wi-Fi, calls, devices)",
+    zoom: "Detail button",
+    zoom_helper: "Button at the top right that shows the full Freebox card in place of the mini card, and back",
     rate_unit: "Rate unit",
     unit_bytes: "Bytes (kB/s, MB/s)",
     unit_bits: "Bits (kb/s, Mb/s)",
@@ -119,6 +126,8 @@ const STRINGS = {
     minutes: "min",
     no_box: "Aucune entité Freebox trouvée. L'intégration Freebox est-elle installée ?",
     unknown_box: "Freebox introuvable",
+    zoom_in: "Afficher la carte complète",
+    zoom_out: "Revenir à la vue compacte",
     box: "Freebox (appareil de l'intégration Freebox)",
     title: "Titre (facultatif, modèle de la Freebox par défaut)",
     model: "Modèle de la Freebox (photo et titre par défaut)",
@@ -131,6 +140,8 @@ const STRINGS = {
     show_system: "Afficher le système (températures, ventilateurs)",
     show_storage: "Afficher le stockage",
     show_services: "Afficher les services (Wi-Fi, appels, appareils)",
+    zoom: "Bouton détail",
+    zoom_helper: "Bouton en haut à droite qui affiche la carte Freebox complète à la place de la mini carte, et inversement",
     rate_unit: "Unité des débits",
     unit_bytes: "Octets (ko/s, Mo/s)",
     unit_bits: "Bits (kb/s, Mb/s)",
@@ -311,6 +322,9 @@ const morph = (root, html) => {
   tpl.innerHTML = html;
   patchChildren(root, tpl.content);
 };
+
+// A click inside a dialog (more-info opened from the card, say) is not a click outside the card.
+const inDialog = (path) => path.some((n) => ["ha-more-info-dialog", "ha-dialog", "dialog"].includes(n.localName));
 
 const fireMoreInfo = (node, entityId) => {
   if (!entityId) return;
@@ -494,6 +508,12 @@ const BASE_STYLE = `
   .tile.down { --c: var(--fb-red); }
   .tile.up { --c: var(--info-color, #039be5); }
   .warning { padding: 16px; color: var(--fb-warn); }
+  .zoom { flex: none; align-self: flex-start; display: grid; place-items: center; width: 24px; height: 24px; padding: 0;
+          margin: -4px -4px 0 -4px; border: none; border-radius: 50%; cursor: pointer; background: none;
+          color: var(--secondary-text-color); }
+  .zoom .icon { width: 16px; height: 16px; }
+  .zoom:hover { background: color-mix(in srgb, var(--secondary-text-color) 16%, transparent); color: var(--primary-text-color); }
+  .zoom:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }
 `;
 
 class FreeboxBase extends HTMLElement {
@@ -646,7 +666,13 @@ class FreeboxBase extends HTMLElement {
               )}"></a>`
             : ""
         }
+        ${this._headerEnd()}
       </div>`;
+  }
+
+  // End of the header, top right (the detail button of the mini card).
+  _headerEnd() {
+    return "";
   }
 
   _noBox() {
@@ -898,24 +924,64 @@ const MINI_STYLE = `
   .foot .reset .icon { width: 12px; height: 12px; }
 `;
 
-class FreeboxMiniCard extends FreeboxBase {
+// The detail button (top right, `zoom: false` removes it) switches the mini card to the full card, with the
+// same configuration, and back; a click anywhere outside the card (or a dialog opened from it) brings it back too.
+class FreeboxMiniCard extends FreeboxCard {
   static getConfigElement() {
     return document.createElement("freebox-mini-card-editor");
   }
 
-  static getStubConfig(hass) {
-    return FreeboxCard.getStubConfig(hass);
+  constructor() {
+    super();
+    this._zoomed = false;
+    this.shadowRoot.addEventListener("click", (ev) => {
+      if (!ev.composedPath().some((n) => n.classList?.contains("zoom"))) return;
+      ev.stopPropagation();
+      this._zoom(!this._zoomed);
+      // Keyboard use (Enter / Space: no click count) keeps the focus on the button of the new view.
+      if (ev.detail === 0) this.shadowRoot.querySelector(".zoom")?.focus();
+    });
+    this._onOutside = (ev) => {
+      const path = ev.composedPath();
+      if (this._zoomed && !path.includes(this) && !inDialog(path)) this._zoom(false);
+    };
+  }
+
+  connectedCallback() {
+    super.connectedCallback?.();
+    document.addEventListener("click", this._onOutside, true);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback?.();
+    document.removeEventListener("click", this._onOutside, true);
   }
 
   getCardSize() {
-    return 3;
+    return this._zoomed ? super.getCardSize() : 3;
   }
 
   getGridOptions() {
-    return { columns: 6, min_columns: 6 };
+    return this._zoomed ? super.getGridOptions() : { columns: 6, min_columns: 6 };
+  }
+
+  _zoom(on) {
+    if (this._zoomed === on) return;
+    this._zoomed = on;
+    this._update();
+  }
+
+  _headerEnd() {
+    if (this._config.zoom === false) return "";
+    const label = esc(this._t(this._zoomed ? "zoom_out" : "zoom_in"));
+    return `<button class="zoom" title="${label}" aria-label="${label}">${svgIcon(this._zoomed ? ICONS.collapse : ICONS.expand)}</button>`;
   }
 
   _render() {
+    return this._zoomed ? super._render() : this._renderMini();
+  }
+
+  _renderMini() {
     const box = discover(this._hass, this._config.box);
     if (!box.id) return this._noBox();
     const c = this._config;
@@ -1065,12 +1131,13 @@ class FreeboxEditorBase extends HTMLElement {
     if (!this._form) {
       this._form = document.createElement("ha-form");
       this._form.computeLabel = (s) => t(this._hass, this._config, s.name);
+      this._form.computeHelper = (s) => (STRINGS.en[`${s.name}_helper`] ? t(this._hass, this._config, `${s.name}_helper`) : undefined);
       this._form.addEventListener("value-changed", (ev) => {
         ev.stopPropagation();
         const config = { ...ev.detail.value };
         for (const [k, v] of Object.entries(config)) {
           // Keep the YAML minimal: drop empty values and options left at their default.
-          if (v === "" || v === undefined || v === null || (k.startsWith("show_") && v === true) || (k === "rate_unit" && v === "bytes"))
+          if (v === "" || v === undefined || v === null || ((k.startsWith("show_") || k === "zoom") && v === true) || (k === "rate_unit" && v === "bytes"))
             delete config[k];
         }
         this._config = config;
@@ -1095,7 +1162,7 @@ class FreeboxCardEditor extends FreeboxEditorBase {
 
 class FreeboxMiniCardEditor extends FreeboxEditorBase {
   static get toggles() {
-    return ["show_network", "show_system"];
+    return ["show_network", "show_system", "zoom"];
   }
 }
 
@@ -1121,7 +1188,7 @@ for (const card of [
   {
     type: "freebox-mini-card",
     name: "Freebox Mini Card",
-    description: "Compact Freebox overview: download / upload, connection, temperature, Wi-Fi and uptime.",
+    description: "Compact Freebox overview: download / upload, connection, temperature, Wi-Fi and uptime, with a button to show the full card.",
   },
 ]) {
   if (!window.customCards.some((c) => c.type === card.type))
