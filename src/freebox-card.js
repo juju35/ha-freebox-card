@@ -61,11 +61,11 @@ const dotText = (text, x, y, p) => {
   let s = "";
   for (const ch of text) {
     const rows = DOTS[ch];
-    rows.forEach((row, j) =>
-      [...row].forEach((c, i) => {
+    for (const [j, row] of rows.entries()) {
+      for (const [i, c] of [...row].entries()) {
         if (c === "#") s += `<circle cx="${(x + i * p).toFixed(1)}" cy="${(y + j * p).toFixed(1)}" r="${(p * 0.36).toFixed(2)}"/>`;
-      })
-    );
+      }
+    }
     x += (rows[0].length + 1) * p;
   }
   return `<g fill="#ffffff" filter="url(#d-glow)">${s}</g>`;
@@ -77,16 +77,21 @@ const deltaSvg = () => {
     grad("d-cap", [[0, "#fdfdfd"], [1, "#e9e9e7"]]) +
     grad("d-front", [[0, "#e4e4e2"], [0.3, "#d6d6d4"], [0.7, "#cacac7"], [1, "#b9b9b6"]], 1, 0) +
     '<filter id="d-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
-  let s = '<ellipse cx="150" cy="146" rx="140" ry="4" opacity=".25"/>';
-  s += '<path d="M14 136 H286 Q286 145 276 145 H24 Q14 145 14 136 Z" fill="#b9b9b6"/>';
-  s += '<path d="M6 66 Q150 78 294 66 V126 Q294 140 278 141 H22 Q6 140 6 126 Z" fill="url(#d-front)"/>';
-  s += '<path d="M6 66 C4 55 13 49 28 43 L106 11 C120 5 180 5 194 11 L272 43 C287 49 296 55 294 66 Q150 78 6 66 Z" fill="url(#d-cap)"/>';
-  s += '<path d="M6 66 Q150 78 294 66" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M6 69.5 Q150 81.5 294 69.5" fill="none" stroke="#bdbdba" stroke-width="1"/>';
-  s += '<path d="M146 62 q2 -2 4 0 m-5 -2 q3 -3 6 0" fill="none" stroke="#b9b9b5" stroke-width=".9" stroke-linecap="round"/>';
-  s += dotText("13:37", 122, 92, 3.6);
-  s += '<path d="M101 93 l4 -4 l4 4 M101 118 l4 4 l4 -4" fill="none" stroke="#fffdf2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" filter="url(#d-glow)"/>';
-  s += `<text x="168" y="134" text-anchor="middle" font-size="9" font-style="italic" fill="#9b9b97" ${FONT}>free</text>`;
-  return svgDoc(300, 152, defs, s);
+  // One outline for the whole body, rounded at the corners; the top face shares its upper part and ends on the
+  // curved rim; the slim base follows the curved bottom.
+  const shoulders = "M6 72 C6 62 12 56 26 50 L98 13 C110 6 190 6 202 13 L274 50 C288 56 294 62 294 72";
+  const rim = "C250 78 200 81 150 81 C100 81 50 78 6 72";
+  let s = '<ellipse cx="150" cy="150" rx="140" ry="4" opacity=".25"/>';
+  s += '<path d="M22 140 Q150 154 278 140 L276 145 Q150 158 24 145 Z" fill="#b9b9b6"/>';
+  s += `<path d="${shoulders} V124 C294 136 286 142 270 143 Q150 151 30 143 C14 142 6 136 6 124 Z" fill="url(#d-front)"/>`;
+  s += `<path d="${shoulders} ${rim} Z" fill="url(#d-cap)"/>`;
+  s += '<path d="M6 72 C50 78 100 81 150 81 C200 81 250 78 294 72" fill="none" stroke="#ffffff" stroke-width="3"/>';
+  s += '<path d="M7 76 C50 82 100 85 150 85 C200 85 250 82 293 76" fill="none" stroke="#bdbdba" stroke-width="1"/>';
+  s += '<path d="M146 66 q2 -2 4 0 m-5 -2 q3 -3 6 0" fill="none" stroke="#b9b9b5" stroke-width=".9" stroke-linecap="round"/>';
+  s += dotText("13:37", 122, 98, 3.6);
+  s += '<path d="M101 99 l4 -4 l4 4 M101 124 l4 4 l4 -4" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" filter="url(#d-glow)"/>';
+  s += `<text x="168" y="139" text-anchor="middle" font-size="9" font-style="italic" fill="#9b9b97" ${FONT}>free</text>`;
+  return svgDoc(300, 156, defs, s);
 };
 // Yellow segmented "13 / 37" display of the Freebox player boxes, at (x, y), digit height dh.
 const display1337 = (x, y, dh, fill = "#d8c21a") =>
@@ -103,7 +108,7 @@ const mini4kSvg = () => {
   s += `<g transform="${top}"><rect width="260" height="100" rx="2" fill="url(#m-top)"/></g>`;
   s += `<g transform="${front}"><rect width="266" height="60" rx="1.5" fill="#0b0b0c"/>`;
   s += display1337(10, 8, 18);
-  s += dpad(102, 30, 13, "#9a9a9a") + `<circle cx="134" cy="30" r="3" fill="none" stroke="#9a9a9a" stroke-width="1.2"/>`;
+  s += `${dpad(102, 30, 13, "#9a9a9a")}<circle cx="134" cy="30" r="3" fill="none" stroke="#9a9a9a" stroke-width="1.2"/>`;
   s += `<text x="252" y="13" text-anchor="end" font-size="8" font-style="italic" fill="#c8c8c8" ${FONT}>freebox</text></g>`;
   return svgDoc(278, 120, defs, s);
 };
@@ -121,7 +126,7 @@ const revolutionSvg = () => {
   s += `<g transform="${side}"><rect width="100" height="30" rx="3" fill="#0e0f10"/><circle cx="72" cy="14" r="3" fill="#222"/></g>`;
   s += `<g transform="${front}"><rect width="230" height="30" rx="3" fill="url(#r-front)"/>`;
   s += display1337(8, 2, 12);
-  s += dpad(58, 15, 11, "#c9b318") + `<circle cx="84" cy="15" r="2.6" fill="none" stroke="#c9b318" stroke-width="1"/>`;
+  s += `${dpad(58, 15, 11, "#c9b318")}<circle cx="84" cy="15" r="2.6" fill="none" stroke="#c9b318" stroke-width="1"/>`;
   s += `<rect x="6" y="26" width="20" height="13" rx="1.5" fill="#d61f1f"/><rect x="9" y="29" width="8" height="4" fill="#fff"/></g>`;
   return svgDoc(320, 136, defs, s);
 };
