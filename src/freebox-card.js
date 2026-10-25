@@ -854,9 +854,11 @@ class FreeboxCard extends FreeboxBase {
             this._t("mark_read")
           )}">${svgIcon(ICONS.check)}</button>`
         : "";
-      tiles.push(`<div class="tile svc clickable ${n > 0 ? "warn" : ""}" role="button" tabindex="0" data-key="${missed.entity_id}" data-entity="${missed.entity_id}">${svgIcon(
+      // The keyboard target is the label, not the whole tile: the "mark as read" button must not sit inside
+      // a role="button" element. A click anywhere on the tile still opens the more-info dialog (data-entity).
+      tiles.push(`<div class="tile svc clickable ${n > 0 ? "warn" : ""}" data-key="${missed.entity_id}" data-entity="${missed.entity_id}">${svgIcon(
         n > 0 ? ICONS.phone_missed : ICONS.phone
-      )}<div><div class="k">${this._t("calls")}</div><div class="v">${n} ${this._t("missed")}</div></div>${reset}</div>`);
+      )}<div role="button" tabindex="0"><div class="k">${this._t("calls")}</div><div class="v">${n} ${this._t("missed")}</div></div>${reset}</div>`);
     }
     if (box.trackers.length) {
       const home = box.trackers.filter((id) => this._s(id)?.state === "home").length;
@@ -963,7 +965,10 @@ class FreeboxMiniCard extends FreeboxBase {
             this._t("mark_read")
           )}">${svgIcon(ICONS.check)}</button>`
         : "";
-      foot.push(`<span class="clickable warn" role="button" tabindex="0" data-key="${missed.entity_id}" data-entity="${missed.entity_id}">${svgIcon(ICONS.phone_missed)}${num(missed)}${reset}</span>`);
+      // Same as the tile of the full card: the "mark as read" button stays outside the role="button" element.
+      foot.push(`<span class="clickable warn" data-key="${missed.entity_id}" data-entity="${missed.entity_id}"><span role="button" tabindex="0">${svgIcon(
+        ICONS.phone_missed
+      )}${num(missed)}</span>${reset}</span>`);
     }
     const up = this._uptime(router);
     if (up !== null) foot.push(`<span data-key="uptime">${svgIcon(ICONS.timer)}${fmtUptime(up, this._hass, this._config)}</span>`);
