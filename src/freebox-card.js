@@ -575,6 +575,20 @@ class FreeboxBase extends HTMLElement {
     return fmtRate(toBps(this._s(id)), this._hass, this._config);
   }
 
+  // Missed calls sensor, its count and the "mark as read" button (only when there are some), or null without the sensor.
+  _missedCalls(sc) {
+    const missed = this._s(sc.missed);
+    if (!missed) return null;
+    const n = num(missed) ?? 0;
+    const markRead = n > 0 && this._s(sc.mark_read);
+    const reset = markRead
+      ? `<button class="reset" data-press="${markRead.entity_id}" title="${esc(this._t("mark_read"))}" aria-label="${esc(
+          this._t("mark_read")
+        )}">${svgIcon(ICONS.check)}</button>`
+      : "";
+    return { missed, n, reset };
+  }
+
   _uptime(router) {
     return uptimeSec(router, this._hass.config?.time_zone);
   }
@@ -871,15 +885,9 @@ class FreeboxCard extends FreeboxBase {
         on ? ICONS.wifi : ICONS.wifi_off
       )}<div><div class="k">${this._t("wifi")}</div><div class="v">${this._t(on ? "on" : "off")}</div></div></div>`);
     }
-    const missed = this._s(sc.missed);
-    if (missed) {
-      const n = num(missed) ?? 0;
-      const markRead = n > 0 && this._s(sc.mark_read);
-      const reset = markRead
-        ? `<button class="reset" data-press="${markRead.entity_id}" title="${esc(this._t("mark_read"))}" aria-label="${esc(
-            this._t("mark_read")
-          )}">${svgIcon(ICONS.check)}</button>`
-        : "";
+    const calls = this._missedCalls(sc);
+    if (calls) {
+      const { missed, n, reset } = calls;
       // The keyboard target is the label, not the whole tile: the "mark as read" button must not sit inside
       // a role="button" element. A click anywhere on the tile still opens the more-info dialog (data-entity).
       tiles.push(`<div class="tile svc clickable ${n > 0 ? "warn" : ""}" data-key="${missed.entity_id}" data-entity="${missed.entity_id}">${svgIcon(
@@ -1023,18 +1031,15 @@ class FreeboxMiniCard extends FreeboxCard {
       foot.push(`<span class="clickable ${wifi.state === "on" ? "ok" : ""}" role="button" tabindex="0" data-key="${wifi.entity_id}" data-entity="${wifi.entity_id}">${svgIcon(
         wifi.state === "on" ? ICONS.wifi : ICONS.wifi_off
       )}${this._t("wifi")}</span>`);
-    const missed = this._s(sc.missed);
-    if (missed && (num(missed) ?? 0) > 0) {
-      const markRead = this._s(sc.mark_read);
-      const reset = markRead
-        ? `<button class="reset" data-press="${markRead.entity_id}" title="${esc(this._t("mark_read"))}" aria-label="${esc(
-            this._t("mark_read")
-          )}">${svgIcon(ICONS.check)}</button>`
-        : "";
+    // Missed calls, always shown when the Freebox reports them: in orange with "mark as read" when there are some,
+    // plain at 0, as on the Calls tile of the full card.
+    const calls = this._missedCalls(sc);
+    if (calls) {
+      const { missed, n, reset } = calls;
       // Same as the tile of the full card: the "mark as read" button stays outside the role="button" element.
-      foot.push(`<span class="clickable warn" data-key="${missed.entity_id}" data-entity="${missed.entity_id}"><span role="button" tabindex="0">${svgIcon(
-        ICONS.phone_missed
-      )}${num(missed)}</span>${reset}</span>`);
+      foot.push(`<span class="clickable ${n > 0 ? "warn" : ""}" data-key="${missed.entity_id}" data-entity="${missed.entity_id}" title="${esc(
+        `${this._t("calls")} · ${n} ${this._t("missed")}`
+      )}"><span role="button" tabindex="0">${svgIcon(n > 0 ? ICONS.phone_missed : ICONS.phone)}${n}</span>${reset}</span>`);
     }
     const up = this._uptime(router);
     if (up !== null) foot.push(`<span data-key="uptime">${svgIcon(ICONS.timer)}${fmtUptime(up, this._hass, this._config)}</span>`);

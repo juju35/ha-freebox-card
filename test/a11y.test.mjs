@@ -68,3 +68,31 @@ for (const type of ["freebox-card", "freebox-mini-card"]) {
     await page.close();
   });
 }
+
+test("freebox-mini-card: the missed calls stay visible at 0, plain and without the mark as read button", async (t) => {
+  if (skip) return t.skip(skip);
+  const page = await browser.newPage();
+  await page.setContent("<!doctype html><body><div id=root></div></body>");
+  await page.addScriptTag({ content: src });
+  const res = await page.evaluate(
+    ({ states, entities, devices }) => {
+      const id = "sensor.freebox_missed_calls";
+      const el = document.createElement("freebox-mini-card");
+      el.setConfig({ type: "custom:freebox-mini-card" });
+      el.hass = {
+        states: { ...states, [id]: { ...states[id], state: "0" } },
+        entities,
+        devices,
+        language: "en",
+        config: { time_zone: "UTC" },
+        callService: () => {},
+      };
+      document.getElementById("root").appendChild(el);
+      const chip = el.shadowRoot.querySelector(`.foot [data-key="${id}"]`);
+      return chip && { text: chip.textContent.trim(), warn: chip.classList.contains("warn"), reset: !!chip.querySelector(".reset") };
+    },
+    { states, entities, devices }
+  );
+  assert.deepEqual(res, { text: "0", warn: false, reset: false });
+  await page.close();
+});
