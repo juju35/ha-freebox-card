@@ -49,6 +49,9 @@ const shots = [
   { file: "card-dark", type: "freebox-card", theme: "dark", width: 460, config: { language: "fr" } },
   { file: "mini-card", type: "freebox-mini-card", theme: "light", width: 380, config: {} },
   { file: "mini-card-dark", type: "freebox-mini-card", theme: "dark", width: 380, config: { language: "fr" } },
+  // The mini card after a click on its detail button: the full card in its place.
+  { file: "mini-card-zoom", type: "freebox-mini-card", theme: "light", width: 460, config: {}, zoom: true },
+  { file: "mini-card-zoom-dark", type: "freebox-mini-card", theme: "dark", width: 460, config: { language: "fr" }, zoom: true },
 ];
 
 const browser = await chromium.launch(
@@ -63,13 +66,16 @@ for (const s of shots) {
   await page.addScriptTag({ content: HA_CARD });
   await page.addScriptTag({ content: cardJs });
   await page.evaluate(
-    ({ type, config, states, entities, devices }) => {
+    ({ type, config, zoom, states, entities, devices }) => {
       const el = document.createElement(type);
       el.setConfig({ type: `custom:${type}`, ...config });
       el.hass = { states, entities, devices, language: "en", locale: { language: "en" }, config: { time_zone: "UTC" } };
       document.getElementById("root").appendChild(el);
+      // A mouse click (click count 1), not .click(): no focus ring on the button.
+      if (zoom)
+        el.shadowRoot.querySelector(".zoom").dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, detail: 1 }));
     },
-    { type: s.type, config: s.config, states, entities, devices }
+    { type: s.type, config: s.config, zoom: !!s.zoom, states, entities, devices }
   );
   await page.waitForTimeout(800);
   const box = await page.locator("#root").boundingBox();

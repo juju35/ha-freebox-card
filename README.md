@@ -21,6 +21,7 @@ The cards are built on top of the [Freebox integration](https://www.home-assista
 ## Features
 
 - Two cards: a full **Freebox Card** and a compact **Freebox Mini Card**
+- Detail button at the top right of the mini card: it shows the full Freebox card in its place (same Freebox and options), and the collapse button, or a click anywhere outside the card, brings the compact view back (`zoom: false` removes it)
 - Automatic discovery of the Freebox integration entities, whatever the language of the entity ids (several Freebox supported)
 - Picture and commercial name of the Freebox model (Ultra, Pop, Delta, Revolution, mini 4K), detected automatically or set with the `model` option, and firmware version
 - Connection status and type (FTTH, xDSL…), public IPv4 (IPv6 on hover) and uptime
@@ -114,6 +115,7 @@ show_image: true
 show_logo: true
 show_network: true
 show_system: true
+zoom: true
 rate_unit: bits
 language: fr
 ```
@@ -132,6 +134,7 @@ language: fr
 | `show_system` | both | `true` | Temperatures and fans (hottest temperature on the mini card) |
 | `show_storage` | full | `true` | Disk partitions and RAID status |
 | `show_services` | full | `true` | Wi-Fi, missed calls and connected devices |
+| `zoom` | mini | `true` | Detail button at the top right: shows the full card (every section) in place of the mini card, and back |
 | `rate_unit` | both | `bytes` | Rates unit: `bytes` (kB/s, MB/s) or `bits` (kb/s, Mb/s) |
 | `language` | both | Auto | Force language: `fr` or `en` (auto-detects from HA settings) |
 
@@ -150,6 +153,9 @@ The models supported by the [Freebox integration](https://www.home-assistant.io/
 |---|---|
 | ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) |
 | ![mini card](screenshots/mini-card.png) | ![mini card dark](screenshots/mini-card-dark.png) |
+| ![mini card, detail view](screenshots/mini-card-zoom.png) | ![mini card dark, detail view](screenshots/mini-card-zoom-dark.png) |
+
+The last row is the mini card after a click on its detail button (top right): the full card, with the collapse button in the same place.
 
 ## How it works
 
