@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.9.0
+
+### Changes
+- The Freebox pictures are drawn instead of photos (Ultra, Pop, Delta, Revolution, mini 4K): rounded boxes as an extruded top shape, square boxes in parallel projection, each with its details (Ultra and Pop "free" pill, Delta dot-matrix clock on its tall curved front, yellow 13/37 display of the Revolution and mini 4K, Revolution red tab). Sharp at any size.
+
+### Maintenance
+- The README shows the same drawings (`images/freebox-<model>.svg`, written by `npm run screenshots`); a test checks they match the card. Screenshots regenerated.
+
 ## 1.8.1
 
 ### Fixes

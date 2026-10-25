@@ -8,13 +8,136 @@
  */
 
 const VERSION = "__VERSION__";
-// Pictures of the Freebox models, inlined by scripts/build.mjs from images/freebox-<model>.webp.
+// Freebox pictures, drawn: rounded boxes as an extruded top shape (plan flattened by the view angle), square boxes
+// in parallel projection (each face drawn flat and placed with shared axes).
+const FONT = 'font-family="Arial, Helvetica, sans-serif"';
+// Extrusion of a convex top shape: the shape `top(dy)` drawn at dy = h (bottom), a band between its left / right
+// extremes (x0, x1 at height yExt), then the shape at dy = 0 (top).
+const extrude = (top, x0, x1, yExt, h, side, cap) =>
+  `<path d="${top(h)}" fill="${side}"/><rect x="${x0}" y="${yExt}" width="${x1 - x0}" height="${h}" fill="${side}"/><path d="${top(0)}" fill="${cap}"/>`;
+const svgDoc = (w, h, defs, body) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}"><defs>${defs}</defs>${body}</svg>`;
+const grad = (id, stops, x2 = 0, y2 = 1) =>
+  `<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}">${stops.map(([o, c]) => `<stop offset="${o}" stop-color="${c}"/>`).join("")}</linearGradient>`;
+// Stadium (pill) outline centred on (cx, cy), half-sizes a × b, ends of radius b.
+const stadium = (cx, cy, a, b) => `M${cx - a + b} ${cy - b} H${cx + a - b} A${b} ${b} 0 0 1 ${cx + a - b} ${cy + b} H${cx - a + b} A${b} ${b} 0 0 1 ${cx - a + b} ${cy - b} Z`;
+// Squircle-like rounded ellipse (Ultra): superellipse approximated with cubic curves.
+const roundEllipse = (cx, cy, a, b, k = 0.82) =>
+  `M${cx} ${cy - b} C${cx + a * k} ${cy - b} ${cx + a} ${cy - b * k} ${cx + a} ${cy} C${cx + a} ${cy + b * k} ${cx + a * k} ${cy + b} ${cx} ${cy + b} C${cx - a * k} ${cy + b} ${cx - a} ${cy + b * k} ${cx - a} ${cy} C${cx - a} ${cy - b * k} ${cx - a * k} ${cy - b} ${cx} ${cy - b} Z`;
+
+// Freebox Ultra: white rounded oval with the black "free" pill and its button on top.
+const ultraSvg = () => {
+  const h = 46;
+  const top = (dy) => roundEllipse(150, 46 + dy, 140, 40);
+  const defs = grad("u-cap", [[0, "#ffffff"], [1, "#ebebe9"]]) + grad("u-side", [[0, "#f1f1ef"], [0.55, "#dededb"], [1, "#b9b9b5"]], 1, 0);
+  let s = `<ellipse cx="150" cy="${46 + h + 37}" rx="136" ry="7" opacity=".25"/>`;
+  s += extrude(top, 10, 290, 46, h, "url(#u-side)", "url(#u-cap)");
+  s += `<path d="${stadium(158, 34, 40, 9)}" fill="#141517"/>`;
+  s += `<text x="148" y="37.5" text-anchor="middle" font-size="11" font-style="italic" font-weight="700" fill="#fff" ${FONT}>free</text>`;
+  s += `<circle cx="187" cy="34" r="5.5" fill="#2a2c30" stroke="#3d4045"/>`;
+  return svgDoc(300, 140, defs, s);
+};
+// Freebox Pop: white puck, silver "free" pill with its dark button on top, LED on the front.
+const popSvg = () => {
+  const h = 42;
+  const top = (dy) => `M10 ${48 + dy} A140 38 0 0 1 290 ${48 + dy} A140 38 0 0 1 10 ${48 + dy} Z`;
+  const defs = grad("p-cap", [[0, "#ffffff"], [1, "#e7e8e8"]]) + grad("p-side", [[0, "#f3f3f1"], [0.5, "#d9d9d6"], [1, "#a7a8a6"]], 1, 0) + grad("p-pill", [[0, "#d9dbdd"], [1, "#a9adb1"]]);
+  let s = `<ellipse cx="150" cy="${48 + h + 34}" rx="136" ry="8" opacity=".25"/>`;
+  s += extrude(top, 10, 290, 48, h, "url(#p-side)", "url(#p-cap)");
+  s += `<path d="${stadium(185, 30, 38, 7)}" fill="url(#p-pill)"/>`;
+  s += `<text x="174" y="33.5" text-anchor="middle" font-size="9" font-style="italic" font-weight="700" fill="#fff" ${FONT}>free</text>`;
+  s += `<ellipse cx="210" cy="30" rx="11" ry="5.5" fill="#2a2c30"/>`;
+  s += `<circle cx="150" cy="${48 + 38 + h * 0.5}" r="1.8" fill="#fff"/><circle cx="150" cy="${48 + 38 + h * 0.5}" r="4" fill="#fff" opacity=".3"/>`;
+  return svgDoc(300, 136, defs, s);
+};
+// Dot-matrix glyphs (5 × 7) of the Delta clock.
+const DOTS = {
+  1: ["..#..", ".##..", "..#..", "..#..", "..#..", "..#..", ".###."],
+  3: [".###.", "#...#", "....#", "..##.", "....#", "#...#", ".###."],
+  7: ["#####", "....#", "...#.", "..#..", "..#..", "..#..", "..#.."],
+  ":": [".", ".", "#", ".", "#", ".", "."],
+};
+// "text" in glowing dots from (x, y), dot pitch p.
+const dotText = (text, x, y, p) => {
+  let s = "";
+  for (const ch of text) {
+    const rows = DOTS[ch];
+    for (const [j, row] of rows.entries()) {
+      for (const [i, c] of [...row].entries()) {
+        if (c === "#") s += `<circle cx="${(x + i * p).toFixed(1)}" cy="${(y + j * p).toFixed(1)}" r="${(p * 0.36).toFixed(2)}"/>`;
+      }
+    }
+    x += (rows[0].length + 1) * p;
+  }
+  return `<g fill="#ffffff" filter="url(#d-glow)">${s}</g>`;
+};
+// Freebox Delta, seen from the front and low: white rounded-triangle top much foreshortened, tall curved front
+// with its raised rim, dot-matrix clock with the up / down keys, "free" under it, slim base.
+const deltaSvg = () => {
+  const defs =
+    grad("d-cap", [[0, "#fdfdfd"], [1, "#e9e9e7"]]) +
+    grad("d-front", [[0, "#e4e4e2"], [0.3, "#d6d6d4"], [0.7, "#cacac7"], [1, "#b9b9b6"]], 1, 0) +
+    '<filter id="d-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+  // One outline for the whole body, rounded at the corners; the top face shares its upper part and ends on the
+  // curved rim; the slim base follows the curved bottom.
+  const shoulders = "M6 72 C6 62 12 56 26 50 L98 13 C110 6 190 6 202 13 L274 50 C288 56 294 62 294 72";
+  const rim = "C250 78 200 81 150 81 C100 81 50 78 6 72";
+  let s = '<ellipse cx="150" cy="150" rx="140" ry="4" opacity=".25"/>';
+  s += '<path d="M22 140 Q150 154 278 140 L276 145 Q150 158 24 145 Z" fill="#b9b9b6"/>';
+  s += `<path d="${shoulders} V124 C294 136 286 142 270 143 Q150 151 30 143 C14 142 6 136 6 124 Z" fill="url(#d-front)"/>`;
+  s += `<path d="${shoulders} ${rim} Z" fill="url(#d-cap)"/>`;
+  s += '<path d="M6 72 C50 78 100 81 150 81 C200 81 250 78 294 72" fill="none" stroke="#ffffff" stroke-width="3"/>';
+  s += '<path d="M7 76 C50 82 100 85 150 85 C200 85 250 82 293 76" fill="none" stroke="#bdbdba" stroke-width="1"/>';
+  s += '<path d="M146 66 q2 -2 4 0 m-5 -2 q3 -3 6 0" fill="none" stroke="#b9b9b5" stroke-width=".9" stroke-linecap="round"/>';
+  s += dotText("13:37", 122, 98, 3.6);
+  s += '<path d="M101 99 l4 -4 l4 4 M101 124 l4 4 l4 -4" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" filter="url(#d-glow)"/>';
+  s += `<text x="168" y="139" text-anchor="middle" font-size="9" font-style="italic" fill="#9b9b97" ${FONT}>free</text>`;
+  return svgDoc(300, 156, defs, s);
+};
+// Yellow segmented "13 / 37" display of the Freebox player boxes, at (x, y), digit height dh.
+const display1337 = (x, y, dh, fill = "#d8c21a") =>
+  `<text x="${x}" y="${y + dh}" font-size="${dh * 1.25}" font-weight="700" fill="${fill}" ${FONT} letter-spacing="1">13</text><text x="${x}" y="${y + 2.1 * dh}" font-size="${dh * 1.25}" font-weight="700" fill="${fill}" ${FONT} letter-spacing="1">37</text>`;
+const dpad = (cx, cy, r, col) =>
+  `<path d="M${cx - 3} ${cy - r + 3} l3 -3 l3 3 M${cx - 3} ${cy + r - 3} l3 3 l3 -3 M${cx - r + 3} ${cy - 3} l-3 3 l3 3 M${cx + r - 3} ${cy - 3} l3 3 l-3 3" fill="none" stroke="${col}" stroke-width="1.3" stroke-linecap="round"/>`;
+// Freebox mini 4K (photo): seen from above, brushed grey top, black front with the yellow display.
+const mini4kSvg = () => {
+  const [X0, Y0] = [6, 54];
+  const front = `matrix(1 0 0 1 ${X0} ${Y0})`;
+  const top = `matrix(1 0 .06 -.42 ${X0} ${Y0})`;
+  const defs = grad("m-top", [[0, "#7c7f83"], [0.5, "#a7aaae"], [1, "#6d7074"]], 1, 0);
+  let s = `<rect x="${X0}" y="${Y0 + 60}" width="260" height="4" fill="#000" opacity=".35"/>`;
+  s += `<g transform="${top}"><rect width="260" height="100" rx="2" fill="url(#m-top)"/></g>`;
+  s += `<g transform="${front}"><rect width="266" height="60" rx="1.5" fill="#0b0b0c"/>`;
+  s += display1337(10, 8, 18);
+  s += `${dpad(102, 30, 13, "#9a9a9a")}<circle cx="134" cy="30" r="3" fill="none" stroke="#9a9a9a" stroke-width="1.2"/>`;
+  s += `<text x="252" y="13" text-anchor="end" font-size="8" font-style="italic" fill="#c8c8c8" ${FONT}>freebox</text></g>`;
+  return svgDoc(278, 120, defs, s);
+};
+// Freebox Revolution (photo): black box seen from the front left, yellow display and red tab on the front.
+const revolutionSvg = () => {
+  const [X0, Y0] = [10, 52];
+  const front = `matrix(1 .16 0 1 ${X0} ${Y0})`;
+  const top = `matrix(1 .16 .5 -.26 ${X0} ${Y0})`;
+  const side = `matrix(.5 -.26 0 1 ${X0 + 230} ${Y0 + 230 * 0.16})`;
+  const defs = grad("r-top", [[0, "#2b2c2f"], [1, "#151618"]], 1, 0) + grad("r-front", [[0, "#1d1e21"], [1, "#0c0c0d"]]);
+  let tex = "";
+  for (let i = 0; i < 9; i++) tex += `<text x="${8 + (i % 3) * 70}" y="${16 + Math.floor(i / 3) * 30}" font-size="13" font-weight="700" fill="#2e3034" ${FONT}>FREEBOX</text>`;
+  let s = `<ellipse cx="160" cy="${Y0 + 74}" rx="140" ry="7" opacity=".3"/>`;
+  s += `<g transform="${top}"><rect width="230" height="100" rx="5" fill="url(#r-top)"/>${tex}</g>`;
+  s += `<g transform="${side}"><rect width="100" height="30" rx="3" fill="#0e0f10"/><circle cx="72" cy="14" r="3" fill="#222"/></g>`;
+  s += `<g transform="${front}"><rect width="230" height="30" rx="3" fill="url(#r-front)"/>`;
+  s += display1337(8, 2, 12);
+  s += `${dpad(58, 15, 11, "#c9b318")}<circle cx="84" cy="15" r="2.6" fill="none" stroke="#c9b318" stroke-width="1"/>`;
+  s += `<rect x="6" y="26" width="20" height="13" rx="1.5" fill="#d61f1f"/><rect x="9" y="29" width="8" height="4" fill="#fff"/></g>`;
+  return svgDoc(320, 136, defs, s);
+};
+const svgUri = (svg) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
+// Pictures of the Freebox models, by model id.
 const IMG_BOX = {
-  ultra: "__IMG_BOX_ULTRA__",
-  pop: "__IMG_BOX_POP__",
-  delta: "__IMG_BOX_DELTA__",
-  revolution: "__IMG_BOX_REVOLUTION__",
-  mini_4k: "__IMG_BOX_MINI_4K__",
+  ultra: svgUri(ultraSvg()),
+  pop: svgUri(popSvg()),
+  delta: svgUri(deltaSvg()),
+  revolution: svgUri(revolutionSvg()),
+  mini_4k: svgUri(mini4kSvg()),
 };
 const IMG_LOGO = "__IMG_LOGO__";
 const FREE_URL = "https://www.free.fr";
@@ -130,7 +253,7 @@ const STRINGS = {
     zoom_out: "Revenir à la vue compacte",
     box: "Freebox (appareil de l'intégration Freebox)",
     title: "Titre (facultatif, modèle de la Freebox par défaut)",
-    model: "Modèle de la Freebox (photo et titre par défaut)",
+    model: "Modèle de la Freebox (illustration et titre par défaut)",
     model_auto: "Automatique",
     show_image: "Afficher la photo de la Freebox",
     admin: "Ouvrir Freebox OS",

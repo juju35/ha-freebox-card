@@ -1,12 +1,19 @@
 // Renders the cards with mock Freebox data and saves the README screenshots.
 // Usage: npm run build && npm run screenshots
 import { chromium } from "playwright";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { states, entities, devices, NOW } from "./mock-states.mjs";
+import { load } from "../test/load.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const cardJs = readFileSync(`${root}dist/freebox-card.js`, "utf8");
+
+// README copies of the drawn model pictures: images/freebox-<model>.svg.
+const { IMG_BOX } = load("freebox-card.js", ["IMG_BOX"]);
+for (const [id, uri] of Object.entries(IMG_BOX)) {
+  writeFileSync(`${root}images/freebox-${id.replace(/_/g, "-")}.svg`, `${decodeURIComponent(uri.slice("data:image/svg+xml,".length))}\n`);
+}
 
 const THEMES = {
   light: {
