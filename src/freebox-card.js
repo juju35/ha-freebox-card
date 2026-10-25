@@ -49,17 +49,44 @@ const popSvg = () => {
   s += `<circle cx="150" cy="${48 + 38 + h * 0.5}" r="1.8" fill="#fff"/><circle cx="150" cy="${48 + 38 + h * 0.5}" r="4" fill="#fff" opacity=".3"/>`;
   return svgDoc(300, 136, defs, s);
 };
-// Freebox Delta: white rounded triangle, clock on the front.
+// Dot-matrix glyphs (5 × 7) of the Delta clock.
+const DOTS = {
+  1: ["..#..", ".##..", "..#..", "..#..", "..#..", "..#..", ".###."],
+  3: [".###.", "#...#", "....#", "..##.", "....#", "#...#", ".###."],
+  7: ["#####", "....#", "...#.", "..#..", "..#..", "..#..", "..#.."],
+  ":": [".", ".", "#", ".", "#", ".", "."],
+};
+// "text" in glowing dots from (x, y), dot pitch p.
+const dotText = (text, x, y, p) => {
+  let s = "";
+  for (const ch of text) {
+    const rows = DOTS[ch];
+    rows.forEach((row, j) =>
+      [...row].forEach((c, i) => {
+        if (c === "#") s += `<circle cx="${(x + i * p).toFixed(1)}" cy="${(y + j * p).toFixed(1)}" r="${(p * 0.36).toFixed(2)}"/>`;
+      })
+    );
+    x += (rows[0].length + 1) * p;
+  }
+  return `<g fill="#ffffff" filter="url(#d-glow)">${s}</g>`;
+};
+// Freebox Delta, seen from the front and low: white rounded-triangle top much foreshortened, tall curved front
+// with its raised rim, dot-matrix clock with the up / down keys, "free" under it, slim base.
 const deltaSvg = () => {
-  const h = 30;
-  const top = (dy) => `M34 ${74 + dy} C8 ${74 + dy} 4 ${60 + dy} 24 ${50 + dy} L112 ${16 + dy} C134 ${6 + dy} 166 ${6 + dy} 188 ${16 + dy} L276 ${50 + dy} C296 ${60 + dy} 292 ${74 + dy} 266 ${74 + dy} Z`;
-  const defs = grad("d-cap", [[0, "#ffffff"], [1, "#e6e6e4"]]) + grad("d-side", [[0, "#e2e2df"], [0.5, "#cfcfcc"], [1, "#adadaa"]], 1, 0);
-  let s = `<ellipse cx="150" cy="${74 + h + 3}" rx="138" ry="5" opacity=".25"/>`;
-  s += extrude(top, 12, 288, 62, h, "url(#d-side)", "url(#d-cap)");
-  s += `<text x="160" y="${74 + 22}" text-anchor="middle" font-size="19" letter-spacing="2" fill="#ffffff" stroke="#c4c4c0" stroke-width=".6" ${FONT}>13:37</text>`;
-  s += `<path d="M96 ${74 + 6} l4 -4 l4 4 M96 ${74 + 20} l4 4 l4 -4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" filter="drop-shadow(0 0 .6px #b5b5b1)"/>`;
-  s += `<text x="150" y="${74 + 33}" text-anchor="middle" font-size="6" font-style="italic" fill="#a9a9a5" ${FONT}>free</text>`;
-  return svgDoc(300, 112, defs, s);
+  const defs =
+    grad("d-cap", [[0, "#fdfdfd"], [1, "#e9e9e7"]]) +
+    grad("d-front", [[0, "#e4e4e2"], [0.3, "#d6d6d4"], [0.7, "#cacac7"], [1, "#b9b9b6"]], 1, 0) +
+    '<filter id="d-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+  let s = '<ellipse cx="150" cy="146" rx="140" ry="4" opacity=".25"/>';
+  s += '<path d="M14 136 H286 Q286 145 276 145 H24 Q14 145 14 136 Z" fill="#b9b9b6"/>';
+  s += '<path d="M6 66 Q150 78 294 66 V126 Q294 140 278 141 H22 Q6 140 6 126 Z" fill="url(#d-front)"/>';
+  s += '<path d="M6 66 C4 55 13 49 28 43 L106 11 C120 5 180 5 194 11 L272 43 C287 49 296 55 294 66 Q150 78 6 66 Z" fill="url(#d-cap)"/>';
+  s += '<path d="M6 66 Q150 78 294 66" fill="none" stroke="#ffffff" stroke-width="3"/><path d="M6 69.5 Q150 81.5 294 69.5" fill="none" stroke="#bdbdba" stroke-width="1"/>';
+  s += '<path d="M146 62 q2 -2 4 0 m-5 -2 q3 -3 6 0" fill="none" stroke="#b9b9b5" stroke-width=".9" stroke-linecap="round"/>';
+  s += dotText("13:37", 122, 92, 3.6);
+  s += '<path d="M101 93 l4 -4 l4 4 M101 118 l4 4 l4 -4" fill="none" stroke="#fffdf2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" filter="url(#d-glow)"/>';
+  s += `<text x="168" y="134" text-anchor="middle" font-size="9" font-style="italic" fill="#9b9b97" ${FONT}>free</text>`;
+  return svgDoc(300, 152, defs, s);
 };
 // Yellow segmented "13 / 37" display of the Freebox player boxes, at (x, y), digit height dh.
 const display1337 = (x, y, dh, fill = "#d8c21a") =>
