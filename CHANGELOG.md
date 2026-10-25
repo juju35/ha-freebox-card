@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.1
+
+### Fixes
+- **Freebox Mini Card**: the missed calls are always shown in the footer when the Freebox reports them, as on the Calls tile of the full card: plain phone icon at 0, orange with the count and the "mark as read" button when there are some (they were hidden at 0).
+
+### Maintenance
+- The full and mini cards share the missed calls chip logic; browser test of the chip at 0.
+
 ## 1.8.0
 
 ### New
