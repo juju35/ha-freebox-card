@@ -1,0 +1,70 @@
+// Browser test (Chromium through Playwright) of the missed calls controls: the "mark calls as read"
+// button must not sit inside an element with role="button" (its descendants are presentational for
+// assistive technologies, so the button would be unreachable). Skipped when Playwright or Chromium is
+// not installed, except in CI, where it must run. CHROMIUM_PATH points to a local Chromium if needed.
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { after, before, test } from "node:test";
+import { devices, entities, states } from "../scripts/mock-states.mjs";
+
+const src = readFileSync(new URL("../src/freebox-card.js", import.meta.url), "utf8");
+
+let browser;
+let skip = false;
+before(async () => {
+  try {
+    const { chromium } = await import("playwright");
+    browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+  } catch (err) {
+    if (process.env.CI) throw err;
+    skip = `Chromium not available: ${err.message.split("\n")[0]}`;
+  }
+});
+after(() => browser?.close());
+
+for (const type of ["freebox-card", "freebox-mini-card"]) {
+  test(`${type}: mark calls as read is reachable and the missed calls stay keyboard operable`, async (t) => {
+    if (skip) return t.skip(skip);
+    const page = await browser.newPage();
+    const errors = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    await page.setContent("<!doctype html><body><div id=root></div></body>");
+    await page.addScriptTag({ content: src });
+    const res = await page.evaluate(
+      ({ type, states, entities, devices }) => {
+        const calls = (window.calls = []);
+        const opened = [];
+        const el = document.createElement(type);
+        el.setConfig({ type: `custom:${type}` });
+        el.hass = {
+          states,
+          entities,
+          devices,
+          language: "en",
+          config: { time_zone: "UTC" },
+          callService: (...a) => calls.push(a),
+        };
+        el.addEventListener("hass-more-info", (e) => opened.push(e.detail.entityId));
+        document.getElementById("root").appendChild(el);
+        const root = el.shadowRoot;
+        const nested = root.querySelectorAll('[role="button"] button, [role="button"] [role="button"]').length;
+        const reset = root.querySelector("button.reset");
+        reset.click();
+        const owner = root.querySelector('[data-key="sensor.freebox_missed_calls"]');
+        const target = owner.querySelector('[role="button"]') ?? (owner.getAttribute("role") === "button" ? owner : null);
+        target.focus();
+        target.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, composed: true }));
+        return { nested, label: reset.getAttribute("aria-label"), focused: root.activeElement === target, opened };
+      },
+      { type, states, entities, devices }
+    );
+    const calls = await page.evaluate(() => window.calls);
+    assert.equal(res.nested, 0, "a control is nested in a role=button element");
+    assert.equal(res.label, "Mark calls as read");
+    assert.ok(res.focused);
+    assert.deepEqual(res.opened, ["sensor.freebox_missed_calls"]);
+    assert.deepEqual(calls, [["button", "press", { entity_id: "button.freebox_mark_calls_as_read" }]]);
+    assert.deepEqual(errors, []);
+    await page.close();
+  });
+}

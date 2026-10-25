@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.7.2
+
+### Fixes
+- Screen readers can reach the **Mark calls as read** button of the missed calls tile (full card) and of the missed calls in the mini card footer: it is no longer inside an element announced as a single button. The keyboard target is now the label of the missed calls; a click anywhere on the tile still opens the more-info dialog.
+
+### Maintenance
+- Browser test for the missed calls controls; the duplication check job runs on Node 22.
+
 ## 1.7.1
 
 ### Changes
