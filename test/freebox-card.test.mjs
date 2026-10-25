@@ -111,11 +111,13 @@ test("the model is detected from the device and can be forced with the model opt
   assert.equal(MODELS.map((m) => m.id).join(), "ultra,pop,delta,revolution,mini_4k");
 });
 
-test("every model has its picture in the build", async () => {
+test("every model has its drawn picture, also shown in the README", async () => {
   const { MODELS, IMG_BOX } = load("freebox-card.js", ["MODELS", "IMG_BOX"]);
-  const { existsSync } = await import("node:fs");
+  const { readFileSync } = await import("node:fs");
   for (const m of MODELS) {
-    assert.equal(IMG_BOX[m.id], `__IMG_BOX_${m.id.toUpperCase()}__`);
-    assert.ok(existsSync(new URL(`../images/freebox-${m.id.replace(/_/g, "-")}.webp`, import.meta.url)), m.id);
+    assert.match(IMG_BOX[m.id], /^data:image\/svg\+xml,/, m.id);
+    // images/freebox-<model>.svg is the README copy of the same drawing (npm run screenshots writes it).
+    const file = readFileSync(new URL(`../images/freebox-${m.id.replace(/_/g, "-")}.svg`, import.meta.url), "utf8");
+    assert.equal(file.trim(), decodeURIComponent(IMG_BOX[m.id].slice("data:image/svg+xml,".length)), m.id);
   }
 });

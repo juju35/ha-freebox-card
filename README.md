@@ -144,7 +144,7 @@ The models supported by the [Freebox integration](https://www.home-assistant.io/
 
 | Freebox Ultra | Freebox Pop | Freebox Delta | Freebox Revolution | Freebox mini 4K |
 |:---:|:---:|:---:|:---:|:---:|
-| <img src="images/freebox-ultra.png" alt="Freebox Ultra" width="140"> | <img src="images/freebox-pop.png" alt="Freebox Pop" width="140"> | <img src="images/freebox-delta.png" alt="Freebox Delta" width="140"> | <img src="images/freebox-revolution.png" alt="Freebox Revolution" width="140"> | <img src="images/freebox-mini-4k.png" alt="Freebox mini 4K" width="140"> |
+| <img src="images/freebox-ultra.svg" alt="Freebox Ultra" width="140"> | <img src="images/freebox-pop.svg" alt="Freebox Pop" width="140"> | <img src="images/freebox-delta.svg" alt="Freebox Delta" width="140"> | <img src="images/freebox-revolution.svg" alt="Freebox Revolution" width="140"> | <img src="images/freebox-mini-4k.svg" alt="Freebox mini 4K" width="140"> |
 | `ultra` (v9) | `pop` (v8) | `delta` (v7) | `revolution` (v6) | `mini_4k` |
 
 ## Screenshots
@@ -175,7 +175,7 @@ Thresholds:
 
 ```bash
 npm install
-npm run build        # bundles src/freebox-card.js + images/*.webp into dist/freebox-card.js
+npm run build        # bundles src/freebox-card.js + images/free.webp into dist/freebox-card.js
 npm run check        # builds and checks the card (run in CI)
 npm run screenshots  # renders the cards with mock data (scripts/mock-states.mjs) into screenshots/
 ```
