@@ -612,14 +612,20 @@ const BASE_STYLE = `
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
   .bar { height: 4px; border-radius: 3px; background: var(--divider-color, rgba(127,127,127,.25)); overflow: hidden; }
   .bar > div { height: 100%; border-radius: 3px; background: var(--c, var(--fb-red)); transition: width .6s ease; }
-  .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 4px; }
+  .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px; }
+  .header > .chip { flex: none; white-space: nowrap; }
   .titles { flex: 1; min-width: 0; }
   .titles .chips { margin-top: 4px; }
-  .logo-link { display: flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px; border-radius: 10px;
+  .logo-link { display: flex; align-items: center; justify-content: center; flex: none; align-self: flex-start; width: 40px; height: 40px; border-radius: 10px;
                background: #fff; box-shadow: inset 0 0 0 1px var(--divider-color, rgba(0,0,0,.12)); }
   .logo { display: block; width: 34px; height: auto; }
   .name { font-size: 16px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sub { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sub { font-size: 12px; color: var(--secondary-text-color); overflow: hidden; }
+  /* Device name and firmware on one line when they fit, else one per line: the "·" separator that starts a line
+     sits in the negative margin, clipped by .sub. */
+  .sub .parts { display: flex; flex-wrap: wrap; margin-left: -10px; }
+  .sub .parts span { min-width: 0; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sub .parts span::before { content: "·"; display: inline-block; width: 10px; text-align: center; }
   .box-link { display: flex; flex: none; max-width: 40%; }
   .box { height: 48px; width: auto; max-width: 100%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
   .tile { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; min-width: 0;
@@ -746,19 +752,21 @@ class FreeboxBase extends HTMLElement {
     }
   }
 
+  // Status pill of the header row (connection state and type), or "" without the router entity.
+  _statusPill(box) {
+    const router = this._s(box.scalars.router);
+    if (!router) return "";
+    const online = router.state === "home";
+    const type = router.attributes.connection_type;
+    return `<span class="chip status clickable ${online ? "ok" : "crit"}" role="button" tabindex="0" data-entity="${router.entity_id}"><span class="dot"></span>${esc(
+      online ? this._t("online") : this._t("offline")
+    )}${type ? ` · ${esc(String(type).toUpperCase())}` : ""}</span>`;
+  }
+
+  // Info chips under the title (Wi-Fi state).
   _chips(box) {
     const sc = box.scalars;
     const chips = [];
-    const router = this._s(sc.router);
-    if (router) {
-      const online = router.state === "home";
-      const type = router.attributes.connection_type;
-      chips.push(
-        `<span class="chip clickable ${online ? "ok" : "crit"}" role="button" tabindex="0" data-entity="${router.entity_id}"><span class="dot"></span>${esc(
-          online ? this._t("online") : this._t("offline")
-        )}${type ? ` · ${esc(String(type).toUpperCase())}` : ""}</span>`
-      );
-    }
     const wifi = this._s(sc.wifi);
     if (wifi) {
       const on = wifi.state === "on";
@@ -779,9 +787,7 @@ class FreeboxBase extends HTMLElement {
     const model = boxModel(box, c);
     const name = c.title || model?.name || deviceName(box.device) || "Freebox";
     const adminUrl = /^https?:\/\//i.test(c.admin_url || "") ? c.admin_url : ADMIN_URL;
-    const sub = [devName && devName !== name ? devName : null, firmware ? `${this._t("firmware")} ${firmware}` : null]
-      .filter(Boolean)
-      .join(" · ");
+    const sub = [devName && devName !== name ? devName : null, firmware ? `${this._t("firmware")} ${firmware}` : null].filter(Boolean);
     return `
       <div class="header">
         ${
@@ -791,9 +797,10 @@ class FreeboxBase extends HTMLElement {
         }
         <div class="titles">
           <div class="name">${esc(name)}</div>
-          <div class="sub">${esc(sub)}</div>
+          <div class="sub"><div class="parts">${sub.map((x) => `<span>${esc(x)}</span>`).join("")}</div></div>
           ${withChips ? this._chips(box) : ""}
         </div>
+        ${withChips ? this._statusPill(box) : ""}
         ${
           c.show_image !== false
             ? `<a class="box-link" href="${esc(adminUrl)}" target="_blank" rel="noopener noreferrer" title="${esc(
@@ -1035,13 +1042,12 @@ class FreeboxCard extends FreeboxBase {
 // ---------------------------------------------------------------------------
 
 const MINI_STYLE = `
-  .header { padding: 12px 12px 4px; }
   .logo-link { width: 32px; height: 32px; border-radius: 8px; }
   .logo { width: 26px; }
   .box-link { max-width: 35%; }
   .box { height: 44px; }
   .name { font-size: 16px; }
-  .content { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .content { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
   .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .tile { padding: 6px 8px; gap: 8px; }
   .tile .v { font-size: 14px; }
