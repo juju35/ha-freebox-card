@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.12.0 - 2026-10-26
+
+### Fixes
+- **Mini card**: the detail button now sits flush top-right and vertically centred on the header, matching the other cards (it was pinned to the top and pulled slightly left).
+
 ## 1.11.0 - 2026-10-26
 
 ### Fixes
