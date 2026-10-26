@@ -615,9 +615,9 @@ const BASE_STYLE = `
   .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 4px; }
   .titles { flex: 1; min-width: 0; }
   .titles .chips { margin-top: 4px; }
-  .logo-link { display: flex; align-items: center; justify-content: center; flex: none; width: 36px; height: 36px; border-radius: 10px;
+  .logo-link { display: flex; align-items: center; justify-content: center; flex: none; width: 40px; height: 40px; border-radius: 10px;
                background: #fff; box-shadow: inset 0 0 0 1px var(--divider-color, rgba(0,0,0,.12)); }
-  .logo { display: block; width: 30px; height: auto; }
+  .logo { display: block; width: 34px; height: auto; }
   .name { font-size: 16px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 12px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .box-link { display: flex; flex: none; max-width: 40%; }
@@ -1036,7 +1036,8 @@ class FreeboxCard extends FreeboxBase {
 
 const MINI_STYLE = `
   .header { padding: 12px 12px 4px; }
-
+  .logo-link { width: 32px; height: 32px; border-radius: 8px; }
+  .logo { width: 26px; }
   .box-link { max-width: 35%; }
   .box { height: 44px; }
   .name { font-size: 16px; }

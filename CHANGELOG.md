@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Changes
+- The Free logo tile in the header is 40 × 40 px on the full card (was 36 px) and 32 × 32 px on the mini card, like the header icon of the other cards; the logo stays left of the title.
+
 ## 1.9.0
 
 ### Changes
