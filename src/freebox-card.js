@@ -613,8 +613,10 @@ const BASE_STYLE = `
   .bar { height: 4px; border-radius: 3px; background: var(--divider-color, rgba(127,127,127,.25)); overflow: hidden; }
   .bar > div { height: 100%; border-radius: 3px; background: var(--c, var(--fb-red)); transition: width .6s ease; }
   .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px; }
-  .header > .chip { flex: none; white-space: nowrap; }
-  .titles { flex: 1; min-width: 0; }
+  /* The status pill sits right of the title line, centred on it; the subtitle and chips stay under the title. */
+  .titles { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .titles > * { grid-column: 1; }
+  .titles > .chip { grid-column: 2; grid-row: 1; align-self: center; margin-left: 10px; white-space: nowrap; }
   .titles .chips { margin-top: 4px; }
   .logo-link { display: flex; align-items: center; justify-content: center; flex: none; align-self: flex-start; width: 40px; height: 40px; border-radius: 10px;
                background: #fff; box-shadow: inset 0 0 0 1px var(--divider-color, rgba(0,0,0,.12)); }
@@ -752,7 +754,7 @@ class FreeboxBase extends HTMLElement {
     }
   }
 
-  // Status pill of the header row (connection state and type), or "" without the router entity.
+  // Status pill right of the title (connection state and type), or "" without the router entity.
   _statusPill(box) {
     const router = this._s(box.scalars.router);
     if (!router) return "";
@@ -797,10 +799,10 @@ class FreeboxBase extends HTMLElement {
         }
         <div class="titles">
           <div class="name">${esc(name)}</div>
+          ${withChips ? this._statusPill(box) : ""}
           <div class="sub"><div class="parts">${sub.map((x) => `<span>${esc(x)}</span>`).join("")}</div></div>
           ${withChips ? this._chips(box) : ""}
         </div>
-        ${withChips ? this._statusPill(box) : ""}
         ${
           c.show_image !== false
             ? `<a class="box-link" href="${esc(adminUrl)}" target="_blank" rel="noopener noreferrer" title="${esc(
