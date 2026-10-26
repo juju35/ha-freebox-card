@@ -53,12 +53,12 @@ const page_html = (theme, width) => `<!doctype html><html><head><meta charset="u
 
 const shots = [
   { file: "card", type: "freebox-card", theme: "light", width: 460, config: {} },
-  { file: "card-dark", type: "freebox-card", theme: "dark", width: 460, config: { language: "fr" } },
+  { file: "card-dark", type: "freebox-card", theme: "dark", width: 460, config: {} },
   { file: "mini-card", type: "freebox-mini-card", theme: "light", width: 380, config: {} },
-  { file: "mini-card-dark", type: "freebox-mini-card", theme: "dark", width: 380, config: { language: "fr" } },
+  { file: "mini-card-dark", type: "freebox-mini-card", theme: "dark", width: 380, config: {} },
   // The mini card after a click on its detail button: the full card in its place.
   { file: "mini-card-zoom", type: "freebox-mini-card", theme: "light", width: 460, config: {}, zoom: true },
-  { file: "mini-card-zoom-dark", type: "freebox-mini-card", theme: "dark", width: 460, config: { language: "fr" }, zoom: true },
+  { file: "mini-card-zoom-dark", type: "freebox-mini-card", theme: "dark", width: 460, config: {}, zoom: true },
 ];
 
 const browser = await chromium.launch(
