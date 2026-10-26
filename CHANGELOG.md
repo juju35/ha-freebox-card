@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.11.0 - 2026-10-26
+
+### Fixes
+- **README**: the screenshots table labelled its right column "Dark (French)", but `scripts/screenshots.mjs` renders every screenshot (light and dark) in English (`language: "en"`). The label is now simply "Dark" to match the images.
+
 ## 1.10.0
 ### Changes
 - The Free logo tile in the header is 40 × 40 px on the full card (was 36 px) and 32 × 32 px on the mini card, like the header icon of the other cards; the logo stays left of the title.
