@@ -140,3 +140,25 @@ test("zoom: false removes the detail button", async (t) => {
   assert.deepEqual(errors, []);
   await page.close();
 });
+
+test("the status pill sits right of the title, centred on its line, the Wi-Fi chip under the title", async (t) => {
+  if (skip) return t.skip(skip);
+  const { page, errors } = await open();
+  const res = await page.evaluate(() => {
+    const root = window.card.shadowRoot;
+    window.click(root.querySelector(".zoom"));
+    const header = root.querySelector(".header");
+    const status = root.querySelector(".titles > .chip.status");
+    const centre = (n) => n.getBoundingClientRect().top + n.getBoundingClientRect().height / 2;
+    return {
+      row: [...header.children].map((n) => n.className.split(" ")[0]),
+      status: status.textContent,
+      dy: Math.abs(centre(status) - centre(root.querySelector(".name"))) <= 1,
+      right: status.getBoundingClientRect().left > root.querySelector(".sub").getBoundingClientRect().right,
+      under: [...root.querySelectorAll(".titles .chips .chip")].map((n) => n.textContent),
+    };
+  });
+  assert.deepEqual(res, { row: ["logo-link", "titles", "box-link", "zoom"], status: "Online · FTTH", dy: true, right: true, under: ["Wi-Fi on"] });
+  assert.deepEqual(errors, []);
+  await page.close();
+});

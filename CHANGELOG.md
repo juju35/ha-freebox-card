@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Changes
+- The Free logo tile in the header is 40 × 40 px on the full card (was 36 px) and 32 × 32 px on the mini card, like the header icon of the other cards; the logo stays left of the title.
+- The status pill ("Online · FTTH") sits in the header row, right of the title and before the Freebox picture, instead of under the title; the Wi-Fi chip stays under the title. The Free logo is top-aligned.
+- The subtitle no longer gets cut off next to the Freebox picture: when the device name and firmware do not fit on one line, the firmware goes to a second line.
+- The status pill is centred on the title line, not on the whole title block, when the subtitle takes two lines.
+- Header geometry: the body starts 8 px below the header on both cards (was 4 px), the logo 12 px from the card's top edge.
+
+### Maintenance
+- Browser test for the status pill position.
+
 ## 1.9.0
 
 ### Changes
