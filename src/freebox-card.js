@@ -639,9 +639,8 @@ const BASE_STYLE = `
   .tile.down { --c: var(--fb-red); }
   .tile.up { --c: var(--info-color, #039be5); }
   .warning { padding: 16px; color: var(--fb-warn); }
-  .zoom { flex: none; align-self: flex-start; display: grid; place-items: center; width: 24px; height: 24px; padding: 0;
-          margin: -4px -4px 0 -4px; border: none; border-radius: 50%; cursor: pointer; background: none;
-          color: var(--secondary-text-color); }
+  .zoom { all: unset; flex: none; cursor: pointer; width: 24px; height: 24px; margin: -4px -4px -4px 0; border-radius: 50%;
+          display: grid; place-items: center; color: var(--secondary-text-color); }
   .zoom .icon { width: 16px; height: 16px; }
   .zoom:hover { background: color-mix(in srgb, var(--secondary-text-color) 16%, transparent); color: var(--primary-text-color); }
   .zoom:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }
