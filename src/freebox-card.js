@@ -610,7 +610,7 @@ const partitionLabel = (hass, p) =>
 
 const BASE_STYLE = `
   :host { --fb-red: #cd1e25; --fb-ok: var(--success-color, #43a047); --fb-warn: var(--warning-color, #ffa600); --fb-crit: var(--error-color, #db4437); }
-  ha-card { overflow: hidden; position: relative; }
+  ha-card { overflow: hidden; position: relative; container-type: inline-size; }
   .icon { width: 18px; height: 18px; fill: currentColor; flex: none; }
   .muted { color: var(--secondary-text-color); }
   .clickable { cursor: pointer; }
@@ -661,6 +661,11 @@ const BASE_STYLE = `
   .action .icon { width: 16px; height: 16px; }
   .action:hover { background: color-mix(in srgb, var(--fb-red) 16%, transparent); color: var(--fb-red); }
   .action:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }
+  /* When the card is narrow, the Freebox picture yields space so the title and status pill stay readable:
+     it shrinks first, then is dropped on the narrowest cards, rather than the title collapsing to one letter.
+     Placed last so it overrides the .box / .box-link rules above. */
+  @container (max-width: 460px) { .box { height: 38px; } }
+  @container (max-width: 400px) { .box-link { display: none; } }
 `;
 
 // In-card confirmation popup, at the top of the card so it stays in view when the card is long.
