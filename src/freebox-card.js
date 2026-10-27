@@ -661,11 +661,6 @@ const BASE_STYLE = `
   .action .icon { width: 16px; height: 16px; }
   .action:hover { background: color-mix(in srgb, var(--fb-red) 16%, transparent); color: var(--fb-red); }
   .action:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }
-  /* When the card is narrow, the Freebox picture yields space so the title and status pill stay readable:
-     it shrinks first, then is dropped on the narrowest cards, rather than the title collapsing to one letter.
-     Placed last so it overrides the .box / .box-link rules above. */
-  @container (max-width: 460px) { .box { height: 38px; } }
-  @container (max-width: 400px) { .box-link { display: none; } }
 `;
 
 // In-card confirmation popup, at the top of the card so it stays in view when the card is long.
@@ -1011,6 +1006,11 @@ const FULL_STYLE = `
   .spin { animation: spin 1.6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+  /* Full card only (and the zoomed mini, which uses this style): its header also carries the status pill and the
+     restart button, so on a narrow card the Freebox picture yields space — it shrinks, then is hidden on the
+     narrowest cards — rather than the title being truncated. The compact mini keeps its picture (MINI_STYLE). */
+  @container (max-width: 460px) { .box { height: 38px; } }
+  @container (max-width: 400px) { .box-link { display: none; } }
 `;
 
 class FreeboxCard extends FreeboxBase {
