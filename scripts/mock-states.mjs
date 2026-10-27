@@ -27,6 +27,7 @@ const raw = [
   ["sensor.freebox_upload_speed", ROUTER, "rate_up", "2348.75", { unit_of_measurement: "kB/s", device_class: "data_rate" }, "Upload speed"],
   ["sensor.freebox_missed_calls", ROUTER, "missed", "2", { unit_of_measurement: "calls" }, "Missed calls"],
   ["button.freebox_mark_calls_as_read", ROUTER, "mark_calls_as_read", "unknown", {}, "Mark calls as read"],
+  ["button.freebox_reboot", ROUTER, "reboot", "unknown", { device_class: "restart" }, "Reboot"],
   ["switch.freebox_wifi", ROUTER, "wifi", "on", {}, "Wi-Fi"],
   ["sensor.freebox_temperature_cpu_0", ROUTER, null, "59", { unit_of_measurement: "°C", device_class: "temperature" }, "Temperature CPU 0"],
   ["sensor.freebox_temperature_cpu_1", ROUTER, null, "57", { unit_of_measurement: "°C", device_class: "temperature" }, "Temperature CPU 1"],

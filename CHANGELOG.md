@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.13.0 - 2026-10-27
+
+### Changes
+- **Restart button**: a round button at the top right of the full card reboots the Freebox (the integration's **Reboot** button), after a confirmation popup shown at the top of the card. It appears only when the integration exposes the reboot button, which is discovered by its translation key or its `restart` device class.
+
 ## 1.12.0 - 2026-10-26
 
 ### Fixes

@@ -97,6 +97,33 @@ test("an unrelated state change keeps the render signature", () => {
   assert.ok(!sameSig(before, make({ ...states, "sensor.down": { ...states["sensor.down"], state: "5" } })._signature()));
 });
 
+test("the reboot button is discovered by its translation key, its device class, or the default entity id", () => {
+  // Registry: translation_key "reboot".
+  const ents = {
+    ...entities,
+    "button.reboot": { entity_id: "button.reboot", platform: "freebox", device_id: "router", translation_key: "reboot" },
+  };
+  const states = { ...baseStates(), "button.reboot": st("unknown") };
+  assert.equal(discover({ states, entities: ents, devices }, "router").scalars.reboot, "button.reboot");
+
+  // Registry: no translation key, device_class "restart".
+  const ents2 = {
+    ...entities,
+    "button.boot": { entity_id: "button.boot", platform: "freebox", device_id: "router", translation_key: null },
+  };
+  const states2 = { ...baseStates(), "button.boot": st("unknown", { device_class: "restart" }) };
+  assert.equal(discover({ states: states2, entities: ents2, devices }, "router").scalars.reboot, "button.boot");
+
+  // No registry (old frontend): the default English entity id.
+  const fb = {
+    "device_tracker.freebox": st("home", { connection_type: "ftth", firmware_version: "1.0", uptime: "2026-10-24T08:00:00" }),
+    "sensor.freebox_download_speed": st("10", { unit_of_measurement: "kB/s" }),
+    "button.freebox_reboot": st("unknown"),
+  };
+  for (const [id, v] of Object.entries(fb)) v.entity_id = id;
+  assert.equal(discover({ states: fb }, undefined).scalars.reboot, "button.freebox_reboot");
+});
+
 test("the model is detected from the device and can be forced with the model option", () => {
   const { boxModel, MODELS } = load("freebox-card.js", ["boxModel", "MODELS"]);
   const box = (dev) => ({ device: dev });
