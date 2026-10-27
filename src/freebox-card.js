@@ -155,6 +155,7 @@ const ICONS = {
   wifi: "M12,21L15.6,16.2C14.6,15.45 13.35,15 12,15C10.65,15 9.4,15.45 8.4,16.2L12,21M12,3C7.95,3 4.21,4.34 1.2,6.6L3,9C5.5,7.12 8.62,6 12,6C15.38,6 18.5,7.12 21,9L22.8,6.6C19.79,4.34 16.05,3 12,3M12,9C9.3,9 6.81,9.89 4.8,11.4L6.6,13.8C8.1,12.67 9.97,12 12,12C14.03,12 15.9,12.67 17.4,13.8L19.2,11.4C17.19,9.89 14.7,9 12,9Z",
   wifi_off: "M2.28,3L1,4.27L2.47,5.74C2.04,6 1.61,6.29 1.2,6.6L3,9C3.39,8.7 3.82,8.42 4.26,8.16L6.5,10.4C5.9,10.68 5.33,11 4.8,11.4L6.6,13.8C7.14,13.4 7.73,13.06 8.35,12.79L10.88,15.32C10,15.5 9.13,15.79 8.4,16.2L12,21L14.88,17.17L19.73,22L21,20.72L3.28,3H2.28M12,3C10.08,3 8.24,3.3 6.5,3.85L8.97,6.32C9.95,6.11 10.96,6 12,6C15.38,6 18.5,7.12 21,9L22.8,6.6C19.79,4.34 16.05,3 12,3M12,9C11.62,9 11.25,9 10.88,9.05L14.15,12.32C15.32,12.6 16.43,13.09 17.4,13.8L19.2,11.4C17.19,9.89 14.7,9 12,9Z",
   check: "M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.58L21,7Z",
+  restart: "M12,4C14.1,4 16.1,4.8 17.6,6.3C20.7,9.4 20.7,14.5 17.6,17.6C15.8,19.5 13.3,20.2 10.9,19.9L11.4,17.9C13.1,18.1 14.9,17.5 16.2,16.2C18.5,13.9 18.5,10.1 16.2,7.7C15.1,6.6 13.5,6 12,6V10.6L7,5.6L12,0.6V4M6.3,17.6C3.7,15 3.3,11 5.1,7.9L6.6,9.4C5.5,11.6 5.9,14.4 7.8,16.2C8.3,16.7 8.9,17.1 9.6,17.4L9,19.4C8,19 7.1,18.4 6.3,17.6Z",
   phone: "M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z",
   phone_missed: "M23.71,16.67C20.66,13.77 16.54,12 12,12C7.46,12 3.34,13.77 0.29,16.67C0.11,16.85 0,17.1 0,17.38C0,17.66 0.11,17.9 0.29,18.08L2.77,20.56C2.95,20.74 3.2,20.85 3.5,20.85C3.75,20.85 4,20.75 4.18,20.57C4.97,19.83 5.86,19.21 6.84,18.71C7.17,18.55 7.4,18.21 7.4,17.81V14.71C8.85,14.24 10.39,14 12,14C13.6,14 15.15,14.24 16.6,14.72V17.82C16.6,18.22 16.83,18.56 17.16,18.72C18.14,19.21 19.04,19.84 19.82,20.58C20,20.76 20.25,20.86 20.5,20.86C20.8,20.86 21.05,20.75 21.23,20.57L23.71,18.09C23.89,17.91 24,17.66 24,17.38C24,17.1 23.89,16.85 23.71,16.67M6.5,5.5L12,11L19,4L18,3L12,9L7.5,4.5H11V3H5V9H6.5V5.5Z",
   database: "M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z",
@@ -182,6 +183,10 @@ const STRINGS = {
     on: "On",
     off: "Off",
     mark_read: "Mark calls as read",
+    restart: "Restart the Freebox",
+    restart_confirm: "Restart the Freebox now? The internet, phone and TV connection will be interrupted for a few minutes.",
+    restart_btn: "Restart",
+    cancel: "Cancel",
     calls: "Calls",
     missed: "missed",
     temperature: "Temp.",
@@ -235,6 +240,10 @@ const STRINGS = {
     on: "Activé",
     off: "Désactivé",
     mark_read: "Marquer les appels comme lus",
+    restart: "Redémarrer la Freebox",
+    restart_confirm: "Redémarrer la Freebox maintenant ? La connexion internet, téléphone et TV sera interrompue pendant quelques minutes.",
+    restart_btn: "Redémarrer",
+    cancel: "Annuler",
     calls: "Appels",
     missed: "manqués",
     temperature: "Temp.",
@@ -550,6 +559,7 @@ const discover = (hass, boxId) => {
         const a = hass.states[id].attributes;
         if (k === "rate_down" || k === "rate_up" || k === "missed" || k === "wifi") box.scalars[k] = id;
         else if (own && domain === "button" && k === "mark_calls_as_read") box.scalars.mark_read = id;
+        else if (own && domain === "button" && (k === "reboot" || a.device_class === "restart")) box.scalars.reboot = id;
         else if (k === "partition_free_space") box.partitions.push({ id, device: d });
         else if (k === "raid_degraded") box.raids.push(id);
         else if (own && domain === "sensor" && !k && a.device_class === "temperature") box.temps.push({ id, name: shortName(hass, id, dev) });
@@ -567,6 +577,7 @@ const discover = (hass, boxId) => {
       else if (/^sensor\.freebox.*_upload_speed$/.test(id)) box.scalars.rate_up ??= id;
       else if (/^sensor\.freebox.*_missed_calls$/.test(id)) box.scalars.missed ??= id;
       else if (/^button\.freebox.*_mark_calls_as_read$/.test(id)) box.scalars.mark_read ??= id;
+      else if (/^button\.freebox.*_reboot$/.test(id) || (id.startsWith("button.freebox") && a.device_class === "restart")) box.scalars.reboot ??= id;
       else if (/^switch\.freebox.*_wifi$/.test(id)) box.scalars.wifi ??= id;
       else if (/^sensor\.freebox/.test(id) && a.device_class === "temperature") box.temps.push({ id, name: tail(hass, id) });
       else if (/^sensor\.freebox/.test(id) && /^rpm$/i.test(a.unit_of_measurement || "")) box.fans.push({ id, name: tail(hass, id) });
@@ -599,7 +610,7 @@ const partitionLabel = (hass, p) =>
 
 const BASE_STYLE = `
   :host { --fb-red: #cd1e25; --fb-ok: var(--success-color, #43a047); --fb-warn: var(--warning-color, #ffa600); --fb-crit: var(--error-color, #db4437); }
-  ha-card { overflow: hidden; }
+  ha-card { overflow: hidden; position: relative; }
   .icon { width: 18px; height: 18px; fill: currentColor; flex: none; }
   .muted { color: var(--secondary-text-color); }
   .clickable { cursor: pointer; }
@@ -644,6 +655,29 @@ const BASE_STYLE = `
   .zoom .icon { width: 16px; height: 16px; }
   .zoom:hover { background: color-mix(in srgb, var(--secondary-text-color) 16%, transparent); color: var(--primary-text-color); }
   .zoom:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }
+  /* Header action button (restart): round, tinted on hover, never filled. */
+  .action { all: unset; flex: none; cursor: pointer; width: 24px; height: 24px; margin: -4px 0; border-radius: 50%;
+            display: grid; place-items: center; color: var(--secondary-text-color); }
+  .action .icon { width: 16px; height: 16px; }
+  .action:hover { background: color-mix(in srgb, var(--fb-red) 16%, transparent); color: var(--fb-red); }
+  .action:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }
+`;
+
+// In-card confirmation popup, at the top of the card so it stays in view when the card is long.
+const DIALOG_STYLE = `
+  .backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-start; justify-content: center;
+              padding-top: 12px; box-sizing: border-box; z-index: 9; border-radius: inherit; }
+  .modal { background: var(--card-background-color, #1c1c1c); color: var(--primary-text-color); width: min(92%, 340px); max-height: calc(100% - 24px);
+           box-sizing: border-box; border-radius: 14px; padding: 16px; box-shadow: 0 8px 30px rgba(0,0,0,.4); display: flex; flex-direction: column; gap: 10px; }
+  .modal h3 { margin: 0; font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .modal h3 .icon { width: 20px; height: 20px; color: var(--fb-red); }
+  .modal .hint { font-size: 13px; color: var(--secondary-text-color); line-height: 1.4; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; }
+  .modal button.act { border: 0; border-radius: 8px; padding: 8px 14px; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .modal button.cancel { background: var(--secondary-background-color, rgba(127,127,127,.12)); color: var(--primary-text-color); }
+  .modal button.danger { background: color-mix(in srgb, var(--fb-red) 16%, transparent); color: var(--fb-red); }
+  .modal button.cancel:hover { background: color-mix(in srgb, var(--secondary-text-color) 16%, var(--secondary-background-color, transparent)); }
+  .modal button.danger:hover { background: color-mix(in srgb, var(--fb-red) 26%, transparent); }
 `;
 
 class FreeboxBase extends HTMLElement {
@@ -651,14 +685,26 @@ class FreeboxBase extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this._html = "";
+    this._dialog = null;
     this.shadowRoot.addEventListener("click", (ev) => {
       const path = ev.composedPath();
+      const action = path.find((n) => n.dataset?.action);
+      // While the confirmation popup is open, only its own buttons and the backdrop act; any other click closes it.
+      if (this._dialog) {
+        if (action?.dataset.action === "dialog-ok") {
+          const run = this._dialog.onOk;
+          this._closeDialog();
+          run?.();
+        } else if (action?.dataset.action === "dialog-cancel" || path[0] === action) {
+          this._closeDialog();
+        }
+        return;
+      }
+      // The restart button opens a confirmation popup before pressing the Freebox reboot button.
+      if (action?.dataset.action === "restart") return this._confirmRestart();
       const press = path.find((n) => n.dataset?.press);
       if (press) {
-        // A failed call is logged (Home Assistant already shows a toast) instead of left unhandled.
-        Promise.resolve()
-          .then(() => this._hass?.callService("button", "press", { entity_id: press.dataset.press }))
-          .catch((err) => console.error("freebox-card: button.press failed", err));
+        this._press(press.dataset.press);
         return;
       }
       const el = path.find((n) => n.dataset?.entity);
@@ -670,7 +716,81 @@ class FreeboxBase extends HTMLElement {
         ev.preventDefault();
         ev.target.click();
       }
+      // Escape closes the confirmation popup.
+      if (ev.key === "Escape" && this._dialog) {
+        ev.stopPropagation();
+        this._closeDialog();
+      }
     });
+  }
+
+  connectedCallback() {
+    // A click elsewhere on the page closes the confirmation popup. It stops there, so the mini card does not
+    // also leave its zoomed view on the same click (this listener runs before the mini card's).
+    this._onDialogOutside ??= (ev) => {
+      if (this._dialog && !ev.composedPath().includes(this)) {
+        ev.stopImmediatePropagation();
+        this._closeDialog();
+      }
+    };
+    document.addEventListener("click", this._onDialogOutside, true);
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener("click", this._onDialogOutside, true);
+  }
+
+  // Presses a Home Assistant button entity. A failed call is logged (Home Assistant already shows a toast).
+  _press(entityId) {
+    Promise.resolve()
+      .then(() => this._hass?.callService("button", "press", { entity_id: entityId }))
+      .catch((err) => console.error("freebox-card: button.press failed", err));
+  }
+
+  // Opens the restart confirmation popup; on confirmation, presses the Freebox reboot button.
+  _confirmRestart() {
+    const box = discover(this._hass, this._config.box);
+    const reboot = box.scalars.reboot;
+    if (!reboot) return;
+    this._openDialog({
+      body: `<h3>${svgIcon(ICONS.restart)}${esc(this._t("restart"))}</h3>
+        <div class="hint">${esc(this._t("restart_confirm"))}</div>`,
+      ok: this._t("restart_btn"),
+      onOk: () => this._press(reboot),
+    });
+  }
+
+  _openDialog(dialog) {
+    this._dialog = dialog;
+    this._update();
+    this.shadowRoot.querySelector(".modal .danger")?.focus();
+  }
+
+  _closeDialog() {
+    if (!this._dialog) return;
+    this._dialog = null;
+    this._update();
+  }
+
+  _dialogHtml() {
+    const d = this._dialog;
+    if (!d) return "";
+    return `<style>${DIALOG_STYLE}</style><div class="backdrop" data-action="dialog-backdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        ${d.body}
+        <div class="modal-actions">
+          <button class="act cancel" data-action="dialog-cancel">${esc(this._t("cancel"))}</button>
+          <button class="act danger" data-action="dialog-ok">${esc(d.ok)}</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Round restart button for the header: shown only when the Freebox exposes a reboot button.
+  _restartBtn(box) {
+    if (!box.scalars.reboot) return "";
+    const label = esc(this._t("restart"));
+    return `<button class="action" data-action="restart" title="${label}" aria-label="${label}">${svgIcon(ICONS.restart)}</button>`;
   }
 
   set hass(hass) {
@@ -746,7 +866,9 @@ class FreeboxBase extends HTMLElement {
   _update(sig) {
     if (!this._hass || !this._config) return;
     this._sig = sig ?? this._signature();
-    const html = this._render();
+    let html = this._render();
+    // The confirmation popup lives inside the ha-card (positioned over it), added after the content.
+    if (this._dialog) html = html.replace(/<\/ha-card>(?![\s\S]*<\/ha-card>)/, `${this._dialogHtml()}</ha-card>`);
     if (html !== this._html) {
       this._html = html;
       morph(this.shadowRoot, html);
@@ -811,6 +933,7 @@ class FreeboxBase extends HTMLElement {
               )}"></a>`
             : ""
         }
+        ${withChips ? this._restartBtn(box) : ""}
         ${this._headerEnd()}
       </div>`;
   }
