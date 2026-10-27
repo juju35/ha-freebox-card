@@ -158,7 +158,7 @@ test("the status pill sits right of the title, centred on its line, the Wi-Fi ch
       under: [...root.querySelectorAll(".titles .chips .chip")].map((n) => n.textContent),
     };
   });
-  assert.deepEqual(res, { row: ["logo-link", "titles", "box-link", "zoom"], status: "Online · FTTH", dy: true, right: true, under: ["Wi-Fi on"] });
+  assert.deepEqual(res, { row: ["logo-link", "titles", "box-link", "action", "zoom"], status: "Online · FTTH", dy: true, right: true, under: ["Wi-Fi on"] });
   assert.deepEqual(errors, []);
   await page.close();
 });
