@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.17.0 - 2026-10-27
+
+### Fixes
+- **Wi-Fi no longer shown twice on the full card**: the Wi-Fi chip under the title duplicated the Services section's Wi-Fi tile. The chip is now shown only when the Services section is hidden (`show_services: false`); otherwise the Services tile is the single Wi-Fi indicator.
+
 ## 1.16.0 - 2026-10-27
 
 ### Fixes
