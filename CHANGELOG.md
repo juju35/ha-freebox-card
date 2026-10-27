@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.0 - 2026-10-27
+
+### Fixes
+- **Mini card keeps its Freebox picture**: the narrow-card rule that shrinks then hides the picture now applies only to the full card (and the zoomed mini), whose header also carries the status pill and restart button. The compact mini card — which has neither — always shows the picture again.
+
 ## 1.14.0 - 2026-10-27
 
 ### Fixes
