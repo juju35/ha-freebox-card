@@ -1013,6 +1013,11 @@ const FULL_STYLE = `
      picture (MINI_STYLE). */
   @container (max-width: 460px) { .box { height: 38px; } }
   @container (max-width: 380px) { .box { height: 32px; } }
+  /* On a narrow full card the status pill would squeeze the title on its line; move it below the title (in the
+     first column, under the name) so the title keeps the full width. */
+  @container (max-width: 440px) {
+    .titles > .chip.status { grid-column: 1; grid-row: auto; align-self: start; justify-self: start; margin: 4px 0 0; }
+  }
 `;
 
 class FreeboxCard extends FreeboxBase {

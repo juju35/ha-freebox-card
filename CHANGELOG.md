@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.18.0 - 2026-10-27
+
+### Changes
+- **Status pill moves under the title on narrow cards**: on a narrow full card (or zoomed mini) the "Online · FTTH" pill now drops below the title instead of squeezing it on the same line, so the Freebox name stays fully readable while the picture remains visible. On wider cards the pill stays on the title line as before.
+
 ## 1.17.0 - 2026-10-27
 
 ### Fixes
