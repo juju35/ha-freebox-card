@@ -199,7 +199,7 @@ const STRINGS = {
     hours: "h",
     days: "d",
     minutes: "min",
-    no_box: "No Freebox entities found. Is the Freebox integration installed?",
+    no_box: "No internet box found. Is a supported integration (Freebox, Livebox, SFR Box, Bbox) installed?",
     unknown_box: "Freebox not found",
     zoom_in: "Show the full card",
     zoom_out: "Back to the compact view",
@@ -256,7 +256,7 @@ const STRINGS = {
     hours: "h",
     days: "j",
     minutes: "min",
-    no_box: "Aucune entité Freebox trouvée. L'intégration Freebox est-elle installée ?",
+    no_box: "Aucune box internet trouvée. Une intégration compatible (Freebox, Livebox, SFR Box, Bbox) est-elle installée ?",
     unknown_box: "Freebox introuvable",
     zoom_in: "Afficher la carte complète",
     zoom_out: "Revenir à la vue compacte",
@@ -296,6 +296,36 @@ const MODELS = [
   { id: "revolution", name: "Freebox Revolution", re: /fbxgw-r|v6\b/i },
   { id: "mini_4k", name: "Freebox mini 4K", re: /fbxgw2|mini/i },
 ];
+
+// Internet boxes supported, keyed by the Home Assistant integration platform that exposes them. Each operator maps
+// the card's data slots to that integration's entity translation keys (`keys`), or to entity-id patterns for a
+// legacy integration without translation keys (`legacy`), and carries the branding (name, accent colour, URLs,
+// logo and model pictures). Freebox is the reference; the others are discovered the same way from their own keys.
+// Model pictures are added per operator; until then a brand has `models: []` and shows no picture.
+const OPERATORS = {
+  freebox: {
+    platform: "freebox", name: "Freebox", color: "#cd1e25", logo: IMG_LOGO,
+    website: FREE_URL, admin: ADMIN_URL, models: MODELS,
+    keys: { rate_down: "rate_down", rate_up: "rate_up", missed: "missed", wifi: "wifi", mark_read: "mark_calls_as_read", reboot: "reboot", partition: "partition_free_space", raid: "raid_degraded" },
+  },
+  livebox: {
+    platform: "livebox", name: "Livebox", color: "#ff7900", logo: null,
+    website: "https://www.orange.fr", admin: "http://livebox.home", models: [],
+    keys: { rate_down: "down_rate", rate_up: "up_rate", missed: "callers", wifi: "wifi_switch", mark_read: "cmissed_clear_btn", reboot: "restart_btn" },
+  },
+  sfr_box: {
+    platform: "sfr_box", name: "SFR Box", color: "#e2001a", logo: null,
+    website: "https://www.sfr.fr", admin: "http://192.168.1.1", models: [],
+    // The reboot button has no translation key but device_class "restart" (matched below too).
+    keys: { rate_down: "dsl_rate_down", rate_up: "dsl_rate_up", reboot: "system_reboot" },
+  },
+  bbox: {
+    platform: "bbox", name: "Bbox", color: "#1246a0", logo: null,
+    website: "https://www.bouyguestelecom.fr", admin: "https://mabbox.bytel.fr", models: [],
+    // Legacy integration: hardcoded English names, no translation keys, so it is discovered by entity-id suffix.
+    keys: {}, legacy: { rate_down: /_currently_used_download_bandwidth$/, rate_up: /_currently_used_upload_bandwidth$/ },
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -487,29 +517,40 @@ const tail = (hass, id) => {
   return name.match(/(temp[ée]rature|temp\.|ventilateur|fan)\b.*$/i)?.[0] || name;
 };
 
-/** Freebox registry entries, or [] when the registry is not exposed. */
+/** Registry entries of every supported operator, or [] when the registry is not exposed. */
 const registry = (hass) => {
   if (!hass.entities) return [];
   // The scan of the whole registry is cached on hass.entities, replaced only when the registry changes.
   let all = _entries.get(hass.entities);
   if (!all) {
-    all = Object.values(hass.entities).filter((e) => e.platform === "freebox" && !e.hidden);
+    all = Object.values(hass.entities).filter((e) => OPERATORS[e.platform] && !e.hidden);
     _entries.set(hass.entities, all);
   }
   return all.filter((e) => hass.states[e.entity_id]);
 };
 
-/** List the Freebox routers: the devices of the "Download speed" sensors. */
+/** True when an entity is the operator's "download rate" sensor (by translation key, or entity id for a legacy one). */
+const isRateDown = (op, e) =>
+  (op.keys.rate_down && e.translation_key === op.keys.rate_down) || (op.legacy?.rate_down?.test(e.entity_id));
+
+/** The operator of a device, from the platform of its registry entities, or undefined. */
+const opOfDevice = (hass, deviceId) => {
+  for (const e of registry(hass)) if (e.device_id === deviceId) return OPERATORS[e.platform];
+  return undefined;
+};
+
+/** List the boxes of every operator: the devices of their "download rate" sensors. */
 const listBoxes = (hass) => {
   const seen = new Map();
   for (const e of registry(hass)) {
-    if (e.translation_key === "rate_down" && e.device_id && !seen.has(e.device_id))
+    const op = OPERATORS[e.platform];
+    if (op && isRateDown(op, e) && e.device_id && !seen.has(e.device_id))
       seen.set(e.device_id, deviceName(hass.devices?.[e.device_id]) || e.device_id);
   }
   return [...seen.entries()].map(([value, label]) => ({ value, label }));
 };
 
-const emptyBox = () => ({ id: null, device: null, scalars: {}, temps: [], fans: [], partitions: [], raids: [], trackers: [] });
+const emptyBox = () => ({ id: null, device: null, operator: null, scalars: {}, temps: [], fans: [], partitions: [], raids: [], trackers: [] });
 
 /**
  * Map the entities of one Freebox to a structured object of entity ids. The result is cached on the
@@ -536,9 +577,13 @@ const discover = (hass, boxId) => {
     const router = boxId ? (routers.includes(boxId) ? boxId : null) : routers[0];
     if (router) {
       const dev = hass.devices[router];
+      const op = opOfDevice(hass, router) || OPERATORS.freebox;
+      const keys = op.keys;
+      const legacy = op.legacy;
       const entryIds = new Set(dev?.config_entries || []);
       box.id = router;
       box.device = dev;
+      box.operator = op;
       for (const e of entries) {
         const id = e.entity_id;
         const domain = id.split(".")[0];
@@ -550,18 +595,22 @@ const discover = (hass, boxId) => {
         if (domain === "device_tracker") {
           if (own) box.scalars.router = id;
           // Most client trackers have no device (Home Assistant gives one only when another integration
-          // registered the MAC address): with a single Freebox, they belong to it.
+          // registered the MAC address): with a single box, they belong to it.
           else if (sameEntry || (!e.device_id && routers.length === 1)) box.trackers.push(id);
           continue;
         }
         if (!own && !child) continue;
         const k = e.translation_key;
         const a = hass.states[id].attributes;
-        if (k === "rate_down" || k === "rate_up" || k === "missed" || k === "wifi") box.scalars[k] = id;
-        else if (own && domain === "button" && k === "mark_calls_as_read") box.scalars.mark_read = id;
-        else if (own && domain === "button" && (k === "reboot" || a.device_class === "restart")) box.scalars.reboot = id;
-        else if (k === "partition_free_space") box.partitions.push({ id, device: d });
-        else if (k === "raid_degraded") box.raids.push(id);
+        // Each data slot is matched by the operator's translation key, or by an entity-id pattern for a legacy one.
+        if ((keys.rate_down && k === keys.rate_down) || (legacy?.rate_down?.test(id))) box.scalars.rate_down = id;
+        else if ((keys.rate_up && k === keys.rate_up) || (legacy?.rate_up?.test(id))) box.scalars.rate_up = id;
+        else if (keys.missed && k === keys.missed) box.scalars.missed = id;
+        else if (keys.wifi && k === keys.wifi) box.scalars.wifi = id;
+        else if (own && domain === "button" && keys.mark_read && k === keys.mark_read) box.scalars.mark_read = id;
+        else if (own && domain === "button" && ((keys.reboot && k === keys.reboot) || a.device_class === "restart")) box.scalars.reboot = id;
+        else if (keys.partition && k === keys.partition) box.partitions.push({ id, device: d });
+        else if (keys.raid && k === keys.raid) box.raids.push(id);
         else if (own && domain === "sensor" && !k && a.device_class === "temperature") box.temps.push({ id, name: shortName(hass, id, dev) });
         else if (own && domain === "sensor" && !k && /^(rpm|tr\/min)$/i.test(a.unit_of_measurement || ""))
           box.fans.push({ id, name: shortName(hass, id, dev) });
@@ -582,21 +631,28 @@ const discover = (hass, boxId) => {
       else if (/^sensor\.freebox/.test(id) && a.device_class === "temperature") box.temps.push({ id, name: tail(hass, id) });
       else if (/^sensor\.freebox/.test(id) && /^rpm$/i.test(a.unit_of_measurement || "")) box.fans.push({ id, name: tail(hass, id) });
     }
-    if (box.scalars.rate_down) box.id = "freebox";
+    if (box.scalars.rate_down) {
+      box.id = "freebox";
+      box.operator = OPERATORS.freebox;
+    }
   }
   byBox.set(key, { devices: hass.devices, stamp, box });
   return box;
 };
 
-/** Model of the Freebox detected from its device, or undefined. */
+/** Model of the box detected from its device, among its operator's models (Freebox when none is known), or undefined. */
 const detectModel = (box) => {
+  const models = box?.operator?.models ?? MODELS;
   const dev = box?.device;
   const ids = [dev?.model_id, dev?.hw_version, dev?.model, dev?.name].filter(Boolean).join(" ");
-  return ids ? MODELS.find((m) => m.re.test(ids)) : undefined;
+  return ids ? models.find((m) => m.re.test(ids)) : undefined;
 };
 
-/** Model of the Freebox: the one set with the `model` option, else the detected one. */
-const boxModel = (box, config) => MODELS.find((m) => m.id === config?.model) ?? detectModel(box);
+/** Model of the box: the one set with the `model` option, else the detected one. */
+const boxModel = (box, config) => {
+  const models = box?.operator?.models ?? MODELS;
+  return models.find((m) => m.id === config?.model) ?? detectModel(box);
+};
 
 /** Label of a partition: its friendly name without the device name and the "free space" words. */
 const partitionLabel = (hass, p) =>
@@ -632,6 +688,10 @@ const BASE_STYLE = `
   .logo-link { display: flex; align-items: center; justify-content: center; flex: none; align-self: flex-start; width: 40px; height: 40px; border-radius: 10px;
                background: #fff; box-shadow: inset 0 0 0 1px var(--divider-color, rgba(0,0,0,.12)); }
   .logo { display: block; width: 34px; height: auto; }
+  /* Generic tinted box icon for operators without a brand logo. */
+  .brand-icon { display: flex; align-items: center; justify-content: center; flex: none; align-self: flex-start; width: 40px; height: 40px; border-radius: 50%;
+                background: color-mix(in srgb, var(--fb-red) 15%, transparent); color: var(--fb-red); }
+  .brand-icon .icon { width: 22px; height: 22px; }
   .name { font-size: 16px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 12px; color: var(--secondary-text-color); overflow: hidden; }
   /* Device name and firmware on one line when they fit, else one per line: the "·" separator that starts a line
@@ -905,20 +965,24 @@ class FreeboxBase extends HTMLElement {
 
   _header(box, withChips) {
     const c = this._config;
+    const op = box.operator || OPERATORS.freebox;
     const router = this._s(box.scalars.router);
     const firmware = box.device?.sw_version || router?.attributes?.firmware_version;
     const devName = deviceName(box.device);
     const model = boxModel(box, c);
-    const name = c.title || model?.name || deviceName(box.device) || "Freebox";
-    const adminUrl = /^https?:\/\//i.test(c.admin_url || "") ? c.admin_url : ADMIN_URL;
+    const name = c.title || model?.name || devName || op.name;
+    const adminUrl = /^https?:\/\//i.test(c.admin_url || "") ? c.admin_url : op.admin;
     const sub = [devName && devName !== name ? devName : null, firmware ? `${this._t("firmware")} ${firmware}` : null].filter(Boolean);
+    // The brand logo when the operator has one (Freebox), else a tinted generic box icon.
+    const brand =
+      op.logo
+        ? `<a class="logo-link" href="${esc(op.website)}" target="_blank" rel="noopener noreferrer" title="${esc(op.name)}"><img class="logo" src="${op.logo}" alt="${esc(op.name)}"></a>`
+        : `<a class="brand-icon" href="${esc(op.website)}" target="_blank" rel="noopener noreferrer" title="${esc(op.name)}">${svgIcon(ICONS.network)}</a>`;
+    // The box picture only when the operator has a matching model drawing.
+    const boxImg = model && IMG_BOX[model.id] ? IMG_BOX[model.id] : null;
     return `
       <div class="header">
-        ${
-          c.show_logo !== false
-            ? `<a class="logo-link" href="${FREE_URL}" target="_blank" rel="noopener noreferrer" title="free.fr"><img class="logo" src="${IMG_LOGO}" alt="Free"></a>`
-            : ""
-        }
+        ${c.show_logo !== false ? brand : ""}
         <div class="titles">
           <div class="name">${esc(name)}</div>
           ${withChips ? this._statusPill(box) : ""}
@@ -926,12 +990,10 @@ class FreeboxBase extends HTMLElement {
           ${withChips ? this._chips(box) : ""}
         </div>
         ${
-          c.show_image !== false
+          c.show_image !== false && boxImg
             ? `<a class="box-link" href="${esc(adminUrl)}" target="_blank" rel="noopener noreferrer" title="${esc(
                 this._t("admin")
-              )}"><img class="box" src="${IMG_BOX[model?.id] ?? IMG_BOX.ultra}" alt="${esc(
-                model?.name || "Freebox"
-              )}"></a>`
+              )}"><img class="box" src="${boxImg}" alt="${esc(model.name)}"></a>`
             : ""
         }
         ${withChips ? this._restartBtn(box) : ""}
@@ -1048,7 +1110,7 @@ class FreeboxCard extends FreeboxBase {
     if (c.show_storage !== false) parts.push(this._storage(box));
     if (c.show_services !== false) parts.push(this._services(box));
     return `<style>${BASE_STYLE}${FULL_STYLE}</style>
-      <ha-card>
+      <ha-card style="--fb-red:${(box.operator || OPERATORS.freebox).color}">
         ${this._header(box, true)}
         <div class="content">${parts.filter(Boolean).join("")}</div>
       </ha-card>`;
@@ -1180,6 +1242,8 @@ class FreeboxCard extends FreeboxBase {
 const MINI_STYLE = `
   .logo-link { width: 32px; height: 32px; border-radius: 8px; }
   .logo { width: 26px; }
+  .brand-icon { width: 32px; height: 32px; }
+  .brand-icon .icon { width: 18px; height: 18px; }
   .box-link { max-width: 35%; }
   .box { height: 44px; }
   .name { font-size: 16px; }
@@ -1310,7 +1374,7 @@ class FreeboxMiniCard extends FreeboxCard {
     const up = this._uptime(router);
     if (up !== null) foot.push(`<span data-key="uptime">${svgIcon(ICONS.timer)}${fmtUptime(up, this._hass, this._config)}</span>`);
     return `<style>${BASE_STYLE}${MINI_STYLE}</style>
-      <ha-card>
+      <ha-card style="--fb-red:${(box.operator || OPERATORS.freebox).color}">
         ${this._header(box, false)}
         <div class="content">
           ${parts.join("")}

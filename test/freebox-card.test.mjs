@@ -97,6 +97,64 @@ test("an unrelated state change keeps the render signature", () => {
   assert.ok(!sameSig(before, make({ ...states, "sensor.down": { ...states["sensor.down"], state: "5" } })._signature()));
 });
 
+test("boxes of other operators are discovered from their own entity keys", () => {
+  // Livebox: rate_down/up, wifi, missed calls, reboot and clear-calls buttons by their own translation keys.
+  const lbDevices = { lb: { id: "lb", name: "Livebox 6", model: "Livebox 6", config_entries: ["e"] } };
+  const lbEnt = (entity_id, translation_key) => ({ entity_id, platform: "livebox", translation_key, device_id: "lb" });
+  const lbEntities = {
+    "sensor.l_down": lbEnt("sensor.l_down", "down_rate"),
+    "sensor.l_up": lbEnt("sensor.l_up", "up_rate"),
+    "switch.l_wifi": lbEnt("switch.l_wifi", "wifi_switch"),
+    "sensor.l_callers": lbEnt("sensor.l_callers", "callers"),
+    "button.l_restart": lbEnt("button.l_restart", "restart_btn"),
+    "button.l_clear": lbEnt("button.l_clear", "cmissed_clear_btn"),
+  };
+  const lbStates = {};
+  for (const id of Object.keys(lbEntities)) lbStates[id] = st("1");
+  const lb = discover({ states: lbStates, entities: lbEntities, devices: lbDevices }, "lb");
+  assert.equal(lb.operator.name, "Livebox");
+  assert.equal(lb.scalars.rate_down, "sensor.l_down");
+  assert.equal(lb.scalars.wifi, "switch.l_wifi");
+  assert.equal(lb.scalars.missed, "sensor.l_callers");
+  assert.equal(lb.scalars.reboot, "button.l_restart");
+  assert.equal(lb.scalars.mark_read, "button.l_clear");
+
+  // SFR Box: DSL sync rates by translation key, reboot by device_class "restart", temperature by device_class.
+  const sfrDevices = { sfr: { id: "sfr", name: "SFR Box 8", model: "NB6VAC", config_entries: ["e"] } };
+  const sfrEntities = {
+    "sensor.s_down": { entity_id: "sensor.s_down", platform: "sfr_box", translation_key: "dsl_rate_down", device_id: "sfr" },
+    "sensor.s_up": { entity_id: "sensor.s_up", platform: "sfr_box", translation_key: "dsl_rate_up", device_id: "sfr" },
+    "sensor.s_temp": { entity_id: "sensor.s_temp", platform: "sfr_box", translation_key: null, device_id: "sfr" },
+    "button.s_reboot": { entity_id: "button.s_reboot", platform: "sfr_box", translation_key: null, device_id: "sfr" },
+  };
+  const sfrStates = {
+    "sensor.s_down": st("50000"),
+    "sensor.s_up": st("5000"),
+    "sensor.s_temp": st("45", { device_class: "temperature" }),
+    "button.s_reboot": st("unknown", { device_class: "restart" }),
+  };
+  const sfr = discover({ states: sfrStates, entities: sfrEntities, devices: sfrDevices }, "sfr");
+  assert.equal(sfr.operator.name, "SFR Box");
+  assert.equal(sfr.scalars.rate_down, "sensor.s_down");
+  assert.equal(sfr.scalars.reboot, "button.s_reboot");
+  assert.deepEqual([...sfr.temps].map((t) => t.id), ["sensor.s_temp"]);
+
+  // Bbox: legacy integration with no translation keys, discovered by entity-id suffix.
+  const bbDevices = { bb: { id: "bb", name: "Bbox", config_entries: ["e"] } };
+  const bbEntities = {
+    "sensor.b_down": { entity_id: "sensor.bbox_currently_used_download_bandwidth", platform: "bbox", translation_key: null, device_id: "bb" },
+    "sensor.b_up": { entity_id: "sensor.bbox_currently_used_upload_bandwidth", platform: "bbox", translation_key: null, device_id: "bb" },
+  };
+  const bbStates = {
+    "sensor.bbox_currently_used_download_bandwidth": st("500"),
+    "sensor.bbox_currently_used_upload_bandwidth": st("50"),
+  };
+  const bb = discover({ states: bbStates, entities: bbEntities, devices: bbDevices }, "bb");
+  assert.equal(bb.operator.name, "Bbox");
+  assert.equal(bb.scalars.rate_down, "sensor.bbox_currently_used_download_bandwidth");
+  assert.equal(bb.scalars.rate_up, "sensor.bbox_currently_used_upload_bandwidth");
+});
+
 test("the reboot button is discovered by its translation key, its device class, or the default entity id", () => {
   // Registry: translation_key "reboot".
   const ents = {

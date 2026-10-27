@@ -8,7 +8,7 @@
 
 <p align="center"><img src="images/free.png" alt="Free" width="160"></p>
 
-Lovelace cards for Home Assistant to monitor a Freebox: download / upload rates, connection, temperatures, fans, storage, Wi-Fi, missed calls and connected devices at a glance.
+Lovelace cards for Home Assistant to monitor an internet box at a glance: download / upload rates, connection, temperatures, fans, storage, Wi-Fi, missed calls and connected devices. Built for the Freebox, with discovery for the Livebox (Orange), SFR Box and Bbox (Bouygues) integrations too — each section shows only what its integration exposes.
 
 The cards are built on top of the [Freebox integration](https://www.home-assistant.io/integrations/freebox/) of Home Assistant: entities are **discovered automatically**, you don't have to pick them one by one.
 
@@ -164,7 +164,7 @@ The last row is the mini card after a click on its detail button (top right): th
 
 ## How it works
 
-The cards read the entity and device registries of Home Assistant and keep the entities of the `freebox` platform. Each sensor is recognized by its translation key (`rate_down`, `rate_up`, `missed`, `wifi`, `partition_free_space`, `raid_degraded`), so entity ids translated in another language (for example `sensor.freebox_vitesse_de_telechargement`) and renamed entities are supported.
+The cards read the entity and device registries of Home Assistant and keep the entities of the supported box integrations (`freebox`, `livebox`, `sfr_box`, `bbox`). Each box's sensors are recognized by their integration's own translation keys (for the Freebox: `rate_down`, `rate_up`, `missed`, `wifi`, `partition_free_space`, `raid_degraded`), so entity ids translated in another language (for example `sensor.freebox_vitesse_de_telechargement`) and renamed entities are supported; the Bbox, whose integration uses no translation keys, is matched by entity-id instead. The box picture and the header name, colour and links follow the detected operator.
 
 The Freebox itself is the device of the download speed sensor. Temperature and fan sensors, named by the Freebox, are recognized by their `temperature` device class and `rpm` unit, disk partitions by their parent device, and connected devices by the config entry they share with the Freebox (with a single Freebox, the connected devices trackers that have no device, the default of the integration, are counted too). The **Mark calls as read** and **Reboot** buttons are found by their translation key (the reboot button also by its `restart` device class). The connection type, IP addresses and uptime come from the attributes of the Freebox `device_tracker`. The integration gives the boot date without a time zone, in the system time zone of the Home Assistant process, and the card reads it in the time zone of Home Assistant (**Settings → System → General**). Both match on Home Assistant OS and Supervised; in a Docker container, start Home Assistant with `TZ` set to the same time zone (for example `-e TZ=Europe/Paris`), otherwise the uptime is off by the UTC offset. When the registry is not available, English entity ids (`sensor.freebox_download_speed`…) are used as a fallback.
 
