@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.16.0 - 2026-10-27
+
+### Fixes
+- **Expanded view always shows the Freebox picture**: on the full card (and the zoomed mini) the picture now only shrinks on narrow cards and is never hidden, so it stays visible whenever the card is expanded. The title may be shortened on very narrow cards instead.
+
 ## 1.15.0 - 2026-10-27
 
 ### Fixes
