@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.14.0 - 2026-10-27
+
+### Fixes
+- **Header on narrow cards**: the Freebox picture now yields space before the title — it shrinks, then is hidden on the narrowest cards (container queries) — so the name and status pill stay readable instead of the title being truncated to a few letters when the restart button, status pill and picture share a tight header.
+
 ## 1.13.0 - 2026-10-27
 
 ### Changes
