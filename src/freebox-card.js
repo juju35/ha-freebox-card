@@ -886,12 +886,13 @@ class FreeboxBase extends HTMLElement {
     )}${type ? ` · ${esc(String(type).toUpperCase())}` : ""}</span>`;
   }
 
-  // Info chips under the title (Wi-Fi state).
+  // Info chips under the title (Wi-Fi state). The Services section (shown unless disabled) already has a Wi-Fi
+  // tile, so the header chip would duplicate it: it is shown only when that section is hidden.
   _chips(box) {
     const sc = box.scalars;
     const chips = [];
     const wifi = this._s(sc.wifi);
-    if (wifi) {
+    if (wifi && this._config.show_services === false) {
       const on = wifi.state === "on";
       chips.push(
         `<span class="chip clickable ${on ? "ok" : "off"}" role="button" tabindex="0" data-entity="${wifi.entity_id}">${svgIcon(on ? ICONS.wifi : ICONS.wifi_off)}${esc(

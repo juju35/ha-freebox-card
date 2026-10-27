@@ -141,7 +141,7 @@ test("zoom: false removes the detail button", async (t) => {
   await page.close();
 });
 
-test("the status pill sits right of the title, centred on its line, the Wi-Fi chip under the title", async (t) => {
+test("the status pill sits right of the title, centred on its line, and the Wi-Fi state is not duplicated under it (the Services section shows it)", async (t) => {
   if (skip) return t.skip(skip);
   const { page, errors } = await open();
   const res = await page.evaluate(() => {
@@ -158,7 +158,7 @@ test("the status pill sits right of the title, centred on its line, the Wi-Fi ch
       under: [...root.querySelectorAll(".titles .chips .chip")].map((n) => n.textContent),
     };
   });
-  assert.deepEqual(res, { row: ["logo-link", "titles", "box-link", "action", "zoom"], status: "Online · FTTH", dy: true, right: true, under: ["Wi-Fi on"] });
+  assert.deepEqual(res, { row: ["logo-link", "titles", "box-link", "action", "zoom"], status: "Online · FTTH", dy: true, right: true, under: [] });
   assert.deepEqual(errors, []);
   await page.close();
 });
