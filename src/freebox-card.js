@@ -1007,10 +1007,11 @@ const FULL_STYLE = `
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
   /* Full card only (and the zoomed mini, which uses this style): its header also carries the status pill and the
-     restart button, so on a narrow card the Freebox picture yields space — it shrinks, then is hidden on the
-     narrowest cards — rather than the title being truncated. The compact mini keeps its picture (MINI_STYLE). */
+     restart button, so on a narrow card the Freebox picture shrinks to leave room for the title. It always stays
+     visible — never hidden — so the box is shown whenever the card is expanded. The compact mini keeps its full-size
+     picture (MINI_STYLE). */
   @container (max-width: 460px) { .box { height: 38px; } }
-  @container (max-width: 400px) { .box-link { display: none; } }
+  @container (max-width: 380px) { .box { height: 32px; } }
 `;
 
 class FreeboxCard extends FreeboxBase {
