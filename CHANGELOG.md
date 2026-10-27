@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.19.0 - 2026-10-28
+
+### Changes
+- **Other operators are now discovered** (foundation for multi-operator support): the cards recognise the Livebox (Orange, `livebox`), SFR Box (`sfr_box`) and Bbox (Bouygues, `bbox`) integrations in addition to the Freebox, each from its own entity keys (or entity-id patterns for the Bbox). The header adopts the detected operator's name, accent colour and admin/website links, with a tinted generic box icon when no brand logo is available. Freebox behaviour is unchanged. Per-model box pictures for the new operators come next.
+
 ## 1.18.0 - 2026-10-27
 
 ### Changes
