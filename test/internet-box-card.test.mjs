@@ -224,3 +224,25 @@ test("every model of every operator has its drawn picture, also shown in the REA
     }
   }
 });
+
+test("the editor model dropdown lists the models of the box's operator", () => {
+  const { InternetBoxCardEditor } = load("internet-box-card.js", ["InternetBoxCardEditor"]);
+  const modelOptions = (hass) => {
+    const ed = new InternetBoxCardEditor();
+    ed._hass = hass;
+    ed._config = {};
+    return ed._schema().find((f) => f.name === "model").selector.select.options.map((o) => o.value);
+  };
+  // Freebox: the Freebox models.
+  assert.equal(modelOptions({ states: baseStates(), entities, devices }).join(), ",ultra,pop,delta,revolution,mini_4k");
+  // Livebox: its own models, no Freebox ids.
+  const lbDevices = { lb: { id: "lb", name: "Livebox 6", config_entries: ["lb_entry"] } };
+  const lbEntities = {
+    "sensor.lb_down": { entity_id: "sensor.lb_down", platform: "livebox", device_id: "lb", translation_key: "down_rate" },
+  };
+  const lbStates = { "sensor.lb_down": { entity_id: "sensor.lb_down", ...st("10", { unit_of_measurement: "kB/s" }) } };
+  assert.equal(
+    modelOptions({ states: lbStates, entities: lbEntities, devices: lbDevices }).join(),
+    ",livebox_7,livebox_6,livebox_5,livebox_4,livebox_s"
+  );
+});
