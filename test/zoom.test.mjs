@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import { after, before, test } from "node:test";
 import { devices, entities, states } from "../scripts/mock-states.mjs";
 
-const src = readFileSync(new URL("../src/freebox-card.js", import.meta.url), "utf8");
+const src = readFileSync(new URL("../src/internet-box-card.js", import.meta.url), "utf8");
 
 let browser;
 let skip = false;
@@ -31,8 +31,8 @@ const open = async (config = {}) => {
   await page.addScriptTag({ content: src });
   await page.evaluate(
     ({ config, states, entities, devices }) => {
-      const el = document.createElement("freebox-mini-card");
-      el.setConfig({ type: "custom:freebox-mini-card", ...config });
+      const el = document.createElement("internet-box-mini-card");
+      el.setConfig({ type: "custom:internet-box-mini-card", ...config });
       el.hass = { states, entities, devices, language: "en", config: { time_zone: "UTC" } };
       document.getElementById("root").appendChild(el);
       window.card = el;
@@ -127,6 +127,29 @@ test("a click outside folds the card back, a click inside it or in a dialog does
     return { inside, dialog, outside, detached: window.card._zoomed };
   });
   assert.deepEqual(res, { inside: true, dialog: true, outside: false, detached: true });
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
+test("the former freebox-card / freebox-mini-card types still render the same cards", async (t) => {
+  if (skip) return t.skip(skip);
+  const { page, errors } = await open();
+  const res = await page.evaluate(
+    ({ states, entities, devices }) =>
+      ["freebox-card", "freebox-mini-card"].map((type) => {
+        const el = document.createElement(type);
+        el.setConfig({ type: `custom:${type}` });
+        el.hass = { states, entities, devices, language: "en", config: { time_zone: "UTC" } };
+        document.body.appendChild(el);
+        const root = el.shadowRoot;
+        return [type, !!root.querySelector(".section-title"), !!root.querySelector(".foot")];
+      }),
+    { states, entities, devices }
+  );
+  assert.deepEqual(res, [
+    ["freebox-card", true, false],
+    ["freebox-mini-card", false, true],
+  ]);
   assert.deepEqual(errors, []);
   await page.close();
 });

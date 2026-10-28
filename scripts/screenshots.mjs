@@ -1,4 +1,4 @@
-// Renders the cards with mock Freebox data and saves the README screenshots.
+// Renders the cards with mock Freebox data (the reference box) and saves the README screenshots.
 // Usage: npm run build && npm run screenshots
 import { chromium } from "playwright";
 import { execFileSync } from "node:child_process";
@@ -10,10 +10,10 @@ import { states, entities, devices, NOW } from "./mock-states.mjs";
 import { load } from "../test/load.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const cardJs = readFileSync(`${root}dist/freebox-card.js`, "utf8");
+const cardJs = readFileSync(`${root}dist/internet-box-card.js`, "utf8");
 
-// README copies of the drawn model pictures, per operator: images/freebox-<model>.svg, images/livebox-<model>.svg.
-const { IMG_BOX, OPERATORS } = load("freebox-card.js", ["IMG_BOX", "OPERATORS"]);
+// README copies of the drawn model pictures, per operator: images/freebox-<model>.svg, images/livebox-<model>.svg…
+const { IMG_BOX, OPERATORS } = load("internet-box-card.js", ["IMG_BOX", "OPERATORS"]);
 for (const op of Object.values(OPERATORS)) {
   for (const m of op.models) {
     const base = (op.platform === "freebox" ? `freebox-${m.id}` : m.id).replace(/_/g, "-");
@@ -58,13 +58,13 @@ const page_html = (theme, width) => `<!doctype html><html><head><meta charset="u
 </style></head><body><div id="root"></div></body></html>`;
 
 const shots = [
-  { file: "card", type: "freebox-card", theme: "light", width: 460, config: {} },
-  { file: "card-dark", type: "freebox-card", theme: "dark", width: 460, config: {} },
-  { file: "mini-card", type: "freebox-mini-card", theme: "light", width: 380, config: {} },
-  { file: "mini-card-dark", type: "freebox-mini-card", theme: "dark", width: 380, config: {} },
+  { file: "card", type: "internet-box-card", theme: "light", width: 460, config: {} },
+  { file: "card-dark", type: "internet-box-card", theme: "dark", width: 460, config: {} },
+  { file: "mini-card", type: "internet-box-mini-card", theme: "light", width: 380, config: {} },
+  { file: "mini-card-dark", type: "internet-box-mini-card", theme: "dark", width: 380, config: {} },
   // The mini card after a click on its detail button: the full card in its place.
-  { file: "mini-card-zoom", type: "freebox-mini-card", theme: "light", width: 460, config: {}, zoom: true },
-  { file: "mini-card-zoom-dark", type: "freebox-mini-card", theme: "dark", width: 460, config: {}, zoom: true },
+  { file: "mini-card-zoom", type: "internet-box-mini-card", theme: "light", width: 460, config: {}, zoom: true },
+  { file: "mini-card-zoom-dark", type: "internet-box-mini-card", theme: "dark", width: 460, config: {}, zoom: true },
 ];
 
 // Mount one card on a fresh page and return it (shared by the stills and the GIF). Keeps the fixed clock and the
@@ -110,7 +110,7 @@ for (const s of shots) {
 
 // The running box as a GIF (the cooling fan spinning at its live speed). Needs ffmpeg on PATH. Every animation is
 // paused and stepped frame by frame, so the GIF is identical whatever the machine's speed.
-const gif = { file: "fan", type: "freebox-card", theme: "light", width: 460, config: {} };
+const gif = { file: "fan", type: "internet-box-card", theme: "light", width: 460, config: {} };
 const FPS = 20;
 const SECONDS = 3;
 {

@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a bug with the Freebox Card
+about: Report a bug with the Internet Box Card
 title: "[Bug] "
 labels: bug
 assignees: ""
@@ -26,11 +26,11 @@ If applicable, add screenshots to help explain your problem.
 - Browser:
 - HACS version:
 - Card version:
-- Freebox (model):
+- Box (operator and model):
 
 **Card configuration:**
 ```yaml
-type: custom:freebox-card
+type: custom:internet-box-card
 ```
 
 **Additional context**

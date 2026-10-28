@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { load } from "./load.mjs";
 
-const { discover, listBoxes, parseDate, uptimeSec, FreeboxCard, sameSig } = load("freebox-card.js", [
+const { discover, listBoxes, parseDate, uptimeSec, InternetBoxCard, sameSig } = load("internet-box-card.js", [
   "discover",
   "listBoxes",
   "parseDate",
   "uptimeSec",
-  "FreeboxCard",
+  "InternetBoxCard",
   "sameSig",
 ]);
 
@@ -88,7 +88,7 @@ test("uptimeSec uses the time zone", () => {
 test("an unrelated state change keeps the render signature", () => {
   const states = baseStates();
   const make = (s) => {
-    const el = new FreeboxCard();
+    const el = new InternetBoxCard();
     el._config = {};
     el._hass = { states: s, entities, devices, language: "en", config: { time_zone: "UTC" } };
     return el;
@@ -198,7 +198,7 @@ test("the reboot button is discovered by its translation key, its device class, 
 });
 
 test("the model is detected from the device and can be forced with the model option", () => {
-  const { boxModel, MODELS } = load("freebox-card.js", ["boxModel", "MODELS"]);
+  const { boxModel, MODELS } = load("internet-box-card.js", ["boxModel", "MODELS"]);
   const box = (dev) => ({ device: dev });
   assert.equal(boxModel(box(devices.router), {}).id, "ultra");
   assert.equal(boxModel(box({ model_id: "fbxgw8-r1" }), {}).id, "pop");
@@ -212,7 +212,7 @@ test("the model is detected from the device and can be forced with the model opt
 });
 
 test("every model of every operator has its drawn picture, also shown in the README", async () => {
-  const { OPERATORS, IMG_BOX } = load("freebox-card.js", ["OPERATORS", "IMG_BOX"]);
+  const { OPERATORS, IMG_BOX } = load("internet-box-card.js", ["OPERATORS", "IMG_BOX"]);
   const { readFileSync } = await import("node:fs");
   for (const op of Object.values(OPERATORS)) {
     for (const m of op.models) {
