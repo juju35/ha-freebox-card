@@ -198,23 +198,25 @@ While the box is running, the card animates: the cooling fan spins at its live s
 
 ![fan](screenshots/fan.gif)
 
-| Light | Dark |
-|---|---|
-| ![card](screenshots/card.png) | ![card dark](screenshots/card-dark.png) |
-| ![mini card](screenshots/mini-card.png) | ![mini card dark](screenshots/mini-card-dark.png) |
-| ![mini card, detail view](screenshots/mini-card-zoom.png) | ![mini card dark, detail view](screenshots/mini-card-zoom-dark.png) |
+### Operators
 
-The last row is the mini card after a click on its detail button (top right): the full card, with the collapse button in the same place.
-
-### Other operators
-
-The full card with what each integration exposes: the Livebox shows its line rates, Wi-Fi, missed calls (with the clear button), connected devices and restart button; the SFR Box its DSL line rates, temperature and restart button; the Bbox its bandwidth (picture set with `model: bbox_fibre`).
+The full card with what each integration exposes: the Freebox shows every section (rates, connection, temperatures, fan, storage, Wi-Fi, calls, devices, restart); the Livebox its line rates, Wi-Fi, missed calls (with the clear button), connected devices and restart button; the SFR Box its DSL line rates, temperature and restart button; the Bbox its bandwidth (picture set with `model: bbox_fibre`).
 
 | Operator | Light | Dark |
 |---|---|---|
+| Freebox (Free) | ![Freebox card](screenshots/card.png) | ![Freebox card dark](screenshots/card-dark.png) |
 | Livebox (Orange) | ![Livebox card](screenshots/card-livebox.png) | ![Livebox card dark](screenshots/card-livebox-dark.png) |
 | SFR Box | ![SFR Box card](screenshots/card-sfr.png) | ![SFR Box card dark](screenshots/card-sfr-dark.png) |
 | Bbox (Bouygues Telecom) | ![Bbox card](screenshots/card-bbox.png) | ![Bbox card dark](screenshots/card-bbox-dark.png) |
+
+### Mini card
+
+| Light | Dark |
+|---|---|
+| ![mini card](screenshots/mini-card.png) | ![mini card dark](screenshots/mini-card-dark.png) |
+| ![mini card, detail view](screenshots/mini-card-zoom.png) | ![mini card dark, detail view](screenshots/mini-card-zoom-dark.png) |
+
+The second row is the mini card after a click on its detail button (top right): the full card, with the collapse button in the same place.
 
 ## How it works
 
