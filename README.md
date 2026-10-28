@@ -59,6 +59,8 @@ Home Assistant 2024.8 or later, and one of the integrations above configured.
 
 The connected devices count uses the `device_tracker` entities of the integration, which are often disabled by default: enable the ones you want to follow.
 
+On a Freebox, the restart button needs the **Freebox settings modification** permission: if pressing it fails with an `insufficient_rights` error, open Freebox OS ([mafreebox.freebox.fr](https://mafreebox.freebox.fr)) → **Freebox settings** → **Access management** → **Applications**, and allow **Modification des réglages de la Freebox** for the **Home Assistant** application.
+
 ## Installation
 
 ### Via HACS (recommended)
