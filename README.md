@@ -164,7 +164,7 @@ The model is detected from the box device (model id or name); set `model` to for
 
 ### Freebox
 
-Without a detected model or `model` option, a Freebox shows the Freebox Ultra picture.
+Without a detected model or `model` option, no box picture is shown.
 
 | Freebox Ultra | Freebox Pop | Freebox Delta | Freebox Revolution | Freebox mini 4K |
 |:---:|:---:|:---:|:---:|:---:|
