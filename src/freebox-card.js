@@ -851,7 +851,35 @@ const opOfDevice = (hass, deviceId) => {
   return undefined;
 };
 
-/** List the boxes of every operator: the devices of their "download rate" sensors. */
+/** Entity ids in hass.states that match a legacy operator's download / upload patterns (Bbox has no registry). */
+const legacyStateIds = (hass) => {
+  const out = [];
+  for (const op of Object.values(OPERATORS)) {
+    if (!op.legacy) continue;
+    for (const id of Object.keys(hass.states || {}))
+      if (op.legacy.rate_down?.test(id) || op.legacy.rate_up?.test(id)) out.push(id);
+  }
+  return out;
+};
+
+/** Legacy operators have no entity registry (no unique_id): their box is found in hass.states by the entity-id
+ *  pattern, keyed by the entity-id prefix left once the "download rate" suffix is removed. */
+const legacyBoxes = (hass) => {
+  const seen = new Map();
+  for (const op of Object.values(OPERATORS)) {
+    if (!op.legacy?.rate_down) continue;
+    for (const id of Object.keys(hass.states || {})) {
+      const m = op.legacy.rate_down.exec(id);
+      if (m) {
+        const prefix = id.slice(0, m.index) || id;
+        if (!seen.has(prefix)) seen.set(prefix, op.name);
+      }
+    }
+  }
+  return [...seen.entries()].map(([value, label]) => ({ value, label }));
+};
+
+/** List the boxes of every operator: the devices of their "download rate" sensors, plus legacy boxes from states. */
 const listBoxes = (hass) => {
   const seen = new Map();
   for (const e of registry(hass)) {
@@ -859,7 +887,25 @@ const listBoxes = (hass) => {
     if (op && isRateDown(op, e) && e.device_id && !seen.has(e.device_id))
       seen.set(e.device_id, deviceName(hass.devices?.[e.device_id]) || e.device_id);
   }
-  return [...seen.entries()].map(([value, label]) => ({ value, label }));
+  const list = [...seen.entries()].map(([value, label]) => ({ value, label }));
+  for (const b of legacyBoxes(hass)) if (!seen.has(b.value)) list.push(b);
+  return list;
+};
+
+/** Fill a box from hass.states for a legacy operator (no registry, no device): only the download / upload rates. */
+const fillLegacy = (hass, box, prefix) => {
+  const op = Object.values(OPERATORS).find(
+    (o) => o.legacy?.rate_down && Object.keys(hass.states).some((id) => id.startsWith(prefix) && o.legacy.rate_down.test(id))
+  );
+  if (!op) return;
+  box.id = prefix;
+  box.operator = op;
+  box.device = null;
+  for (const id of Object.keys(hass.states).sort()) {
+    if (!id.startsWith(prefix)) continue;
+    if (op.legacy.rate_down?.test(id)) box.scalars.rate_down = id;
+    else if (op.legacy.rate_up?.test(id)) box.scalars.rate_up = id;
+  }
 };
 
 const emptyBox = () => ({ id: null, device: null, operator: null, scalars: {}, temps: [], fans: [], partitions: [], raids: [], trackers: [] });
@@ -878,17 +924,20 @@ const discover = (hass, boxId) => {
     _cache.set(holder, byBox);
   }
   const key = boxId || "";
-  const stamp = found.map((e) => e.entity_id).join(",");
+  const stamp = found.map((e) => e.entity_id).join(",") + "|" + legacyStateIds(hass).sort().join(",");
   const hit = byBox.get(key);
   if (hit && hit.devices === hass.devices && hit.stamp === stamp) return hit.box;
 
   const box = emptyBox();
   const entries = found.sort((a, b) => a.entity_id.localeCompare(b.entity_id));
-  if (entries.length && hass.devices) {
-    const routers = listBoxes(hass).map((b) => b.value);
-    const router = boxId ? (routers.includes(boxId) ? boxId : null) : routers[0];
-    if (router) {
-      const dev = hass.devices[router];
+  const routers = listBoxes(hass).map((b) => b.value);
+  const router = boxId ? (routers.includes(boxId) ? boxId : null) : routers[0];
+  const dev = router ? hass.devices?.[router] : null;
+  if (router && !dev) {
+    // Legacy operator (Bbox): no device, entities found in hass.states by their id pattern.
+    fillLegacy(hass, box, router);
+  } else if (router && dev) {
+    {
       const op = opOfDevice(hass, router) || OPERATORS.freebox;
       const keys = op.keys;
       const legacy = op.legacy;
