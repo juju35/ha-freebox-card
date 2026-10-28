@@ -1762,7 +1762,8 @@ class InternetBoxEditorBase extends HTMLElement {
   _schema() {
     const boxOptions = this._hass ? listBoxes(this._hass) : [];
     const tr = (k) => t(this._hass, this._config, k);
-    const detected = this._hass ? detectModel(discover(this._hass, this._config.box)) : undefined;
+    const box = this._hass ? discover(this._hass, this._config.box) : undefined;
+    const detected = box ? detectModel(box) : undefined;
     const autoModel = detected ? `${tr("model_auto")} (${detected.name})` : tr("model_auto");
     return [
       {
@@ -1775,7 +1776,10 @@ class InternetBoxEditorBase extends HTMLElement {
         selector: {
           select: {
             mode: "dropdown",
-            options: [{ value: "", label: autoModel }, ...MODELS.map((m) => ({ value: m.id, label: m.name }))],
+            options: [
+              { value: "", label: autoModel },
+              ...(box?.operator?.models ?? MODELS).map((m) => ({ value: m.id, label: m.name })),
+            ],
           },
         },
       },
