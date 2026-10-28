@@ -449,7 +449,6 @@ const ICONS = {
   phone: "M6.62,10.79C8.06,13.62 10.38,15.94 13.21,17.38L15.41,15.18C15.69,14.9 16.08,14.82 16.43,14.93C17.55,15.3 18.75,15.5 20,15.5A1,1 0 0,1 21,16.5V20A1,1 0 0,1 20,21A17,17 0 0,1 3,4A1,1 0 0,1 4,3H7.5A1,1 0 0,1 8.5,4C8.5,5.25 8.7,6.45 9.07,7.57C9.18,7.92 9.1,8.31 8.82,8.59L6.62,10.79Z",
   phone_missed: "M23.71,16.67C20.66,13.77 16.54,12 12,12C7.46,12 3.34,13.77 0.29,16.67C0.11,16.85 0,17.1 0,17.38C0,17.66 0.11,17.9 0.29,18.08L2.77,20.56C2.95,20.74 3.2,20.85 3.5,20.85C3.75,20.85 4,20.75 4.18,20.57C4.97,19.83 5.86,19.21 6.84,18.71C7.17,18.55 7.4,18.21 7.4,17.81V14.71C8.85,14.24 10.39,14 12,14C13.6,14 15.15,14.24 16.6,14.72V17.82C16.6,18.22 16.83,18.56 17.16,18.72C18.14,19.21 19.04,19.84 19.82,20.58C20,20.76 20.25,20.86 20.5,20.86C20.8,20.86 21.05,20.75 21.23,20.57L23.71,18.09C23.89,17.91 24,17.66 24,17.38C24,17.1 23.89,16.85 23.71,16.67M6.5,5.5L12,11L19,4L18,3L12,9L7.5,4.5H11V3H5V9H6.5V5.5Z",
   database: "M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z",
-  chip: "M6,4H18V5H21V7H18V9H21V11H18V13H21V15H18V17H21V19H18V20H6V19H3V17H6V15H3V13H6V11H3V9H6V7H3V5H6V4M11,15V18H12V15H11M13,15V18H14V15H13M15,15V18H16V15H15Z",
   // mdi:arrow-expand / mdi:arrow-collapse: the detail button of the mini card.
   expand: "M10,21V19H6.41L10.91,14.5L9.5,13.09L5,17.59V14H3V21H10M14.5,10.91L19,6.41V10H21V3H14V5H17.59L13.09,9.5L14.5,10.91Z",
   collapse: "M19.5,3.09L15,7.59V4H13V11H20V9H16.41L20.91,4.5L19.5,3.09M4,13V15H7.59L3.09,19.5L4.5,20.91L9,16.41V20H11V13H4Z",
@@ -817,7 +816,8 @@ const _entries = new WeakMap();
 
 const deviceName = (dev) => dev && (dev.name_by_user || dev.name);
 
-/** Friendly name of an entity without its device name ("Freebox v9 (r1) Température CPU 0" -> "Température CPU 0"). */
+/** Friendly name of an entity without its device name ("Freebox v9 (r1) Température CPU 0" -> "Température CPU 0").
+ *  The literal "Freebox" prefix covers the legacy Freebox integration, whose entities carry it without a device name. */
 const shortName = (hass, id, dev) => {
   const name = hass.states[id]?.attributes?.friendly_name || id.split(".")[1];
   for (const prefix of [dev?.name_by_user, dev?.name, "Freebox"]) {
@@ -929,8 +929,8 @@ const fillLegacy = (hass, box, prefix) => {
 const emptyBox = () => ({ id: null, device: null, operator: null, scalars: {}, temps: [], fans: [], partitions: [], raids: [], trackers: [] });
 
 /**
- * Map the entities of one Freebox to a structured object of entity ids. The result is cached on the
- * registries (hass.entities, hass.devices) and the list of Freebox entities that have a state, not on
+ * Map the entities of one box to a structured object of entity ids. The result is cached on the
+ * registries (hass.entities, hass.devices) and the list of the operators' entities that have a state, not on
  * hass.states, which Home Assistant replaces on every state change.
  */
 const discover = (hass, boxId) => {
@@ -1044,20 +1044,20 @@ const partitionLabel = (hass, p) =>
 // ---------------------------------------------------------------------------
 
 const BASE_STYLE = `
-  :host { --fb-red: #cd1e25; --fb-ok: var(--success-color, #43a047); --fb-warn: var(--warning-color, #ffa600); --fb-crit: var(--error-color, #db4437); }
+  :host { --ibc-red: #cd1e25; --ibc-ok: var(--success-color, #43a047); --ibc-warn: var(--warning-color, #ffa600); --ibc-crit: var(--error-color, #db4437); }
   ha-card { overflow: hidden; position: relative; container-type: inline-size; }
   .icon { width: 18px; height: 18px; fill: currentColor; flex: none; }
   .muted { color: var(--secondary-text-color); }
   .clickable { cursor: pointer; }
   [role="button"]:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 2px; }
-  .ok { --c: var(--fb-ok); } .warn { --c: var(--fb-warn); } .crit { --c: var(--fb-crit); } .off { --c: var(--disabled-text-color, #9e9e9e); }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--fb-ok)); flex: none; display: inline-block; }
+  .ok { --c: var(--ibc-ok); } .warn { --c: var(--ibc-warn); } .crit { --c: var(--ibc-crit); } .off { --c: var(--disabled-text-color, #9e9e9e); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--ibc-ok)); flex: none; display: inline-block; }
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 12px; font-size: 11px; font-weight: 500;
-          background: color-mix(in srgb, var(--c, var(--fb-ok)) 15%, transparent); color: var(--c, var(--fb-ok)); }
+          background: color-mix(in srgb, var(--c, var(--ibc-ok)) 15%, transparent); color: var(--c, var(--ibc-ok)); }
   .chip .icon { width: 14px; height: 14px; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
   .bar { height: 4px; border-radius: 3px; background: var(--divider-color, rgba(127,127,127,.25)); overflow: hidden; }
-  .bar > div { height: 100%; border-radius: 3px; background: var(--c, var(--fb-red)); transition: width .6s ease; }
+  .bar > div { height: 100%; border-radius: 3px; background: var(--c, var(--ibc-red)); transition: width .6s ease; }
   .header { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px; }
   /* The status pill sits right of the title line, centred on it; the subtitle and chips stay under the title. */
   .titles { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; }
@@ -1069,7 +1069,7 @@ const BASE_STYLE = `
   .logo { display: block; width: 34px; height: auto; }
   /* Generic tinted box icon for operators without a brand logo. */
   .brand-icon { display: flex; align-items: center; justify-content: center; flex: none; align-self: flex-start; width: 40px; height: 40px; border-radius: 50%;
-                background: color-mix(in srgb, var(--fb-red) 15%, transparent); color: var(--fb-red); }
+                background: color-mix(in srgb, var(--ibc-red) 15%, transparent); color: var(--ibc-red); }
   .brand-icon .icon { width: 22px; height: 22px; }
   .name { font-size: 16px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 12px; color: var(--secondary-text-color); overflow: hidden; }
@@ -1082,13 +1082,13 @@ const BASE_STYLE = `
   .box { height: 48px; width: auto; max-width: 100%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
   .tile { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; min-width: 0;
           background: var(--secondary-background-color, rgba(127,127,127,.08)); }
-  .tile .icon { color: var(--c, var(--fb-red)); }
+  .tile .icon { color: var(--c, var(--ibc-red)); }
   .tile > div { min-width: 0; }
   .tile .k { font-size: 11px; color: var(--secondary-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tile .v { font-size: 14px; font-weight: 500; white-space: nowrap; }
-  .tile.down { --c: var(--fb-red); }
+  .tile.down { --c: var(--ibc-red); }
   .tile.up { --c: var(--info-color, #039be5); }
-  .warning { padding: 16px; color: var(--fb-warn); }
+  .warning { padding: 16px; color: var(--ibc-warn); }
   .zoom { all: unset; flex: none; cursor: pointer; width: 24px; height: 24px; margin: -4px -4px -4px 0; border-radius: 50%;
           display: grid; place-items: center; color: var(--secondary-text-color); }
   .zoom .icon { width: 16px; height: 16px; }
@@ -1098,7 +1098,7 @@ const BASE_STYLE = `
   .action { all: unset; flex: none; cursor: pointer; width: 24px; height: 24px; margin: -4px 0; border-radius: 50%;
             display: grid; place-items: center; color: var(--secondary-text-color); }
   .action .icon { width: 16px; height: 16px; }
-  .action:hover { background: color-mix(in srgb, var(--fb-red) 16%, transparent); color: var(--fb-red); }
+  .action:hover { background: color-mix(in srgb, var(--ibc-red) 16%, transparent); color: var(--ibc-red); }
   .action:focus-visible { outline: 2px solid var(--primary-color, #03a9f4); outline-offset: 1px; }
 `;
 
@@ -1109,14 +1109,14 @@ const DIALOG_STYLE = `
   .modal { background: var(--card-background-color, #1c1c1c); color: var(--primary-text-color); width: min(92%, 340px); max-height: calc(100% - 24px);
            box-sizing: border-box; border-radius: 14px; padding: 16px; box-shadow: 0 8px 30px rgba(0,0,0,.4); display: flex; flex-direction: column; gap: 10px; }
   .modal h3 { margin: 0; font-size: 16px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
-  .modal h3 .icon { width: 20px; height: 20px; color: var(--fb-red); }
+  .modal h3 .icon { width: 20px; height: 20px; color: var(--ibc-red); }
   .modal .hint { font-size: 13px; color: var(--secondary-text-color); line-height: 1.4; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; }
   .modal button.act { border: 0; border-radius: 8px; padding: 8px 14px; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
   .modal button.cancel { background: var(--secondary-background-color, rgba(127,127,127,.12)); color: var(--primary-text-color); }
-  .modal button.danger { background: color-mix(in srgb, var(--fb-red) 16%, transparent); color: var(--fb-red); }
+  .modal button.danger { background: color-mix(in srgb, var(--ibc-red) 16%, transparent); color: var(--ibc-red); }
   .modal button.cancel:hover { background: color-mix(in srgb, var(--secondary-text-color) 16%, var(--secondary-background-color, transparent)); }
-  .modal button.danger:hover { background: color-mix(in srgb, var(--fb-red) 26%, transparent); }
+  .modal button.danger:hover { background: color-mix(in srgb, var(--ibc-red) 26%, transparent); }
 `;
 
 class InternetBoxBase extends HTMLElement {
@@ -1139,7 +1139,7 @@ class InternetBoxBase extends HTMLElement {
         }
         return;
       }
-      // The restart button opens a confirmation popup before pressing the Freebox reboot button.
+      // The restart button opens a confirmation popup before pressing the box's reboot button.
       if (action?.dataset.action === "restart") return this._confirmRestart();
       const press = path.find((n) => n.dataset?.press);
       if (press) {
@@ -1186,7 +1186,7 @@ class InternetBoxBase extends HTMLElement {
       .catch((err) => console.error("internet-box-card: button.press failed", err));
   }
 
-  // Opens the restart confirmation popup; on confirmation, presses the Freebox reboot button.
+  // Opens the restart confirmation popup; on confirmation, presses the box's reboot button.
   _confirmRestart() {
     const box = discover(this._hass, this._config.box);
     const reboot = box.scalars.reboot;
@@ -1225,7 +1225,7 @@ class InternetBoxBase extends HTMLElement {
     </div>`;
   }
 
-  // Round restart button for the header: shown only when the Freebox exposes a reboot button.
+  // Round restart button for the header: shown only when the box exposes a reboot button.
   _restartBtn(box) {
     if (!box.scalars.reboot) return "";
     const label = esc(this._t("restart"));
@@ -1282,7 +1282,7 @@ class InternetBoxBase extends HTMLElement {
     return uptimeSec(router, this._hass.config?.time_zone);
   }
 
-  // What the render depends on: registries, language, the states of the Freebox entities and the
+  // What the render depends on: registries, language, the states of the box entities and the
   // minute, for the uptime shown in days, hours and minutes.
   _signature() {
     const h = this._hass;
@@ -1422,7 +1422,7 @@ const FULL_STYLE = `
   .ring { width: 52px; height: 52px; transform: rotate(-90deg); }
   .ring circle { fill: none; stroke-width: 6; }
   .ring .track { stroke: var(--divider-color, rgba(127,127,127,.25)); }
-  .ring .value { stroke: var(--c, var(--fb-red)); stroke-linecap: round; transition: stroke-dasharray .6s ease; }
+  .ring .value { stroke: var(--c, var(--ibc-red)); stroke-linecap: round; transition: stroke-dasharray .6s ease; }
   .gauge .val { position: absolute; top: 0; height: 52px; display: flex; align-items: center; justify-content: center; }
   .gauge .val b { font-size: 14px; font-weight: 500; }
   .gauge .lbl { font-size: 12px; color: var(--secondary-text-color); margin-top: 0; text-align: center; white-space: nowrap;
@@ -1436,7 +1436,7 @@ const FULL_STYLE = `
   .part .bar { margin: 4px 0 0; grid-column: 1 / -1; grid-row: 2; }
   .part .detail { font-size: 11px; color: var(--secondary-text-color); display: flex; justify-content: flex-end; grid-column: 2; grid-row: 1; gap: 8px; }
   .tile.svc { --c: var(--secondary-text-color); }
-  .tile.svc.ok { --c: var(--fb-ok); } .tile.svc.warn { --c: var(--fb-warn); }
+  .tile.svc.ok { --c: var(--ibc-ok); } .tile.svc.warn { --c: var(--ibc-warn); }
   .tiles.svc-row { display: flex; flex-wrap: wrap; }
   .tiles.svc-row .tile { flex: 1 1 auto; }
   .tile:has(.reset) { padding-right: 6px; }
@@ -1449,7 +1449,7 @@ const FULL_STYLE = `
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
   /* Full card only (and the zoomed mini, which uses this style): its header also carries the status pill and the
-     restart button, so on a narrow card the Freebox picture shrinks to leave room for the title. It always stays
+     restart button, so on a narrow card the box picture shrinks to leave room for the title. It always stays
      visible — never hidden — so the box is shown whenever the card is expanded. The compact mini keeps its full-size
      picture (MINI_STYLE). */
   @container (max-width: 460px) { .box { height: 38px; } }
@@ -1489,7 +1489,7 @@ class InternetBoxCard extends InternetBoxBase {
     if (c.show_storage !== false) parts.push(this._storage(box));
     if (c.show_services !== false) parts.push(this._services(box));
     return `<style>${BASE_STYLE}${FULL_STYLE}</style>
-      <ha-card style="--fb-red:${(box.operator || OPERATORS.freebox).color}">
+      <ha-card style="--ibc-red:${(box.operator || OPERATORS.freebox).color}">
         ${this._header(box, true)}
         <div class="content">${parts.filter(Boolean).join("")}</div>
       </ha-card>`;
@@ -1634,10 +1634,10 @@ const MINI_STYLE = `
           color: var(--secondary-text-color); margin-top: 2px; }
   .foot span { display: inline-flex; align-items: center; gap: 3px; }
   .foot .icon { width: 14px; height: 14px; }
-  .foot .ok .icon { color: var(--fb-ok); } .foot .warn { color: var(--fb-warn); } .foot .crit { color: var(--fb-crit); }
+  .foot .ok .icon { color: var(--ibc-ok); } .foot .warn { color: var(--ibc-warn); } .foot .crit { color: var(--ibc-crit); }
   .foot .reset { display: grid; place-items: center; width: 18px; height: 18px; padding: 0; margin-left: 3px; border: none;
-    border-radius: 50%; cursor: pointer; color: var(--fb-warn); background: color-mix(in srgb, var(--fb-warn) 15%, transparent); }
-  .foot .reset:hover { background: color-mix(in srgb, var(--fb-warn) 28%, transparent); }
+    border-radius: 50%; cursor: pointer; color: var(--ibc-warn); background: color-mix(in srgb, var(--ibc-warn) 15%, transparent); }
+  .foot .reset:hover { background: color-mix(in srgb, var(--ibc-warn) 28%, transparent); }
   .foot .reset .icon { width: 12px; height: 12px; }
 `;
 
@@ -1740,7 +1740,7 @@ class InternetBoxMiniCard extends InternetBoxCard {
       foot.push(`<span class="clickable ${wifi.state === "on" ? "ok" : ""}" role="button" tabindex="0" data-key="${wifi.entity_id}" data-entity="${wifi.entity_id}">${svgIcon(
         wifi.state === "on" ? ICONS.wifi : ICONS.wifi_off
       )}${this._t("wifi")}</span>`);
-    // Missed calls, always shown when the Freebox reports them: in orange with "mark as read" when there are some,
+    // Missed calls, always shown when the box reports them: in orange with "mark as read" when there are some,
     // plain at 0, as on the Calls tile of the full card.
     const calls = this._missedCalls(sc);
     if (calls) {
@@ -1753,7 +1753,7 @@ class InternetBoxMiniCard extends InternetBoxCard {
     const up = this._uptime(router);
     if (up !== null) foot.push(`<span data-key="uptime">${svgIcon(ICONS.timer)}${fmtUptime(up, this._hass, this._config)}</span>`);
     return `<style>${BASE_STYLE}${MINI_STYLE}</style>
-      <ha-card style="--fb-red:${(box.operator || OPERATORS.freebox).color}">
+      <ha-card style="--ibc-red:${(box.operator || OPERATORS.freebox).color}">
         ${this._header(box, false)}
         <div class="content">
           ${parts.join("")}
@@ -1922,6 +1922,6 @@ for (const card of [
 
 console.info(
   `%c INTERNET-BOX-CARD %c v${VERSION} `,
-  "color: white; background: #cd1e25; font-weight: 700;",
-  "color: #cd1e25; background: white; font-weight: 700;"
+  "color: white; background: #455a64; font-weight: 700;",
+  "color: #455a64; background: white; font-weight: 700;"
 );
