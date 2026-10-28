@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.20.0 - 2026-10-28
+
+### Changes
+- **Livebox (Orange) support with per-model pictures**: the card now draws the Livebox models (4, 5, 6, 7, S) as original stylised pictures and shows its download / upload rate, Wi-Fi, missed calls (with a clear button) and reboot, with the Orange accent colour. The rate sensors are the line sync rate the integration exposes.
+
 ## 1.19.0 - 2026-10-28
 
 ### Changes
