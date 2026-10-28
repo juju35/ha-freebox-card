@@ -206,6 +206,16 @@ While the box is running, the card animates: the cooling fan spins at its live s
 
 The last row is the mini card after a click on its detail button (top right): the full card, with the collapse button in the same place.
 
+### Other operators
+
+The full card with what each integration exposes: the Livebox shows its line rates, Wi-Fi, missed calls (with the clear button), connected devices and restart button; the SFR Box its DSL line rates, temperature and restart button; the Bbox its bandwidth (picture set with `model: bbox_fibre`).
+
+| Operator | Light | Dark |
+|---|---|---|
+| Livebox (Orange) | ![Livebox card](screenshots/card-livebox.png) | ![Livebox card dark](screenshots/card-livebox-dark.png) |
+| SFR Box | ![SFR Box card](screenshots/card-sfr.png) | ![SFR Box card dark](screenshots/card-sfr-dark.png) |
+| Bbox (Bouygues Telecom) | ![Bbox card](screenshots/card-bbox.png) | ![Bbox card dark](screenshots/card-bbox-dark.png) |
+
 ## How it works
 
 The cards read the entity and device registries of Home Assistant and keep the entities of the supported box integrations (`freebox`, `livebox`, `sfr_box`, `bbox`). Each box's sensors are recognized by their integration's own translation keys (for the Freebox: `rate_down`, `rate_up`, `missed`, `wifi`, `partition_free_space`, `raid_degraded`), so entity ids translated in another language (for example `sensor.freebox_vitesse_de_telechargement`) and renamed entities are supported. The Bbox integration is a legacy YAML platform without devices nor unique ids, so its sensors are not in the entity registry: they are found in the states by their entity-id suffix (`_currently_used_download_bandwidth`…). The box picture and the header logo, colour and links follow the detected operator.
@@ -226,7 +236,7 @@ Thresholds:
 npm install
 npm run build        # bundles src/internet-box-card.js + the embedded logos (images/*.svg) into dist/internet-box-card.js
 npm run check        # builds and checks the card (run in CI)
-npm run screenshots  # renders the cards with mock data (scripts/mock-states.mjs) into screenshots/ (and fan.gif, needs ffmpeg)
+npm run screenshots  # renders the cards with mock data (scripts/mock-states.mjs, scripts/mock-operators.mjs) into screenshots/ (and fan.gif, needs ffmpeg)
 ```
 
 `dist/` is not committed: `npm run build` creates it locally, CI builds it on every push, and the release workflow attaches the built file to the release, which is where HACS downloads it from.

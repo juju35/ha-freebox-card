@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { states, entities, devices, NOW } from "./mock-states.mjs";
+import { operators } from "./mock-operators.mjs";
 import { load } from "../test/load.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -66,6 +67,10 @@ const shots = [
   { file: "mini-card-zoom", type: "internet-box-mini-card", theme: "light", width: 460, config: {}, zoom: true },
   { file: "mini-card-zoom-dark", type: "internet-box-mini-card", theme: "dark", width: 460, config: {}, zoom: true },
 ];
+// The full card for each other operator, with the sensors its integration exposes.
+for (const [name, mock] of Object.entries(operators))
+  for (const theme of ["light", "dark"])
+    shots.push({ file: `card-${name}${theme === "dark" ? "-dark" : ""}`, type: "internet-box-card", theme, width: 460, config: mock.config, mock });
 
 // Mount one card on a fresh page and return it (shared by the stills and the GIF). Keeps the fixed clock and the
 // UTC time zone so the card's uptime and times render the same every run.
@@ -87,7 +92,7 @@ async function openCard(browser, s) {
       if (zoom)
         el.shadowRoot.querySelector(".zoom").dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, detail: 1 }));
     },
-    { type: s.type, config: s.config, zoom: !!s.zoom, states, entities, devices }
+    { type: s.type, config: s.config, zoom: !!s.zoom, ...(s.mock || { states, entities, devices }) }
   );
   return page;
 }
