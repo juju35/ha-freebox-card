@@ -127,7 +127,7 @@ language: fr
 |---|---|---|---|
 | `box` | both | First Freebox found | Freebox to display: its device id (only needed with several Freebox, pick it in the visual editor) |
 | `title` | both | Freebox model | Card title |
-| `model` | both | Detected | Freebox model, for its picture and the default title: `ultra`, `pop`, `delta`, `revolution` or `mini_4k` (see [Supported models](#supported-models)) |
+| `model` | both | Detected | Box model, for its picture and the default title. Freebox: `ultra`, `pop`, `delta`, `revolution`, `mini_4k`; Livebox, SFR Box and Bbox models in [Supported models](#supported-models). Needed for the Bbox, whose integration exposes no model |
 | `admin_url` | both | `https://mafreebox.freebox.fr` | Freebox OS address opened when clicking the Freebox picture (for example `http://192.168.1.254`) |
 | `show_image` | both | `true` | Show the Freebox picture |
 | `show_logo` | both | `true` | Show the Free logo (opens free.fr when clicked) |
@@ -147,6 +147,29 @@ The models supported by the [Freebox integration](https://www.home-assistant.io/
 |:---:|:---:|:---:|:---:|:---:|
 | <img src="images/freebox-ultra.svg" alt="Freebox Ultra" width="140"> | <img src="images/freebox-pop.svg" alt="Freebox Pop" width="140"> | <img src="images/freebox-delta.svg" alt="Freebox Delta" width="140"> | <img src="images/freebox-revolution.svg" alt="Freebox Revolution" width="140"> | <img src="images/freebox-mini-4k.svg" alt="Freebox mini 4K" width="140"> |
 | `ultra` (v9) | `pop` (v8) | `delta` (v7) | `revolution` (v6) | `mini_4k` |
+
+The card also discovers the Livebox (Orange), SFR Box and Bbox (Bouygues) integrations. The box pictures below are original stylised silhouettes (no brand logos). The Bbox integration exposes no device model, so set its picture with the `model` option.
+
+### Livebox (Orange)
+
+| Livebox 7 | Livebox 6 | Livebox 5 | Livebox 4 | Livebox S |
+|:---:|:---:|:---:|:---:|:---:|
+| <img src="images/livebox-7.svg" alt="Livebox 7" width="120"> | <img src="images/livebox-6.svg" alt="Livebox 6" width="120"> | <img src="images/livebox-5.svg" alt="Livebox 5" width="120"> | <img src="images/livebox-4.svg" alt="Livebox 4" width="120"> | <img src="images/livebox-s.svg" alt="Livebox S" width="120"> |
+| `livebox_7` | `livebox_6` | `livebox_5` | `livebox_4` | `livebox_s` |
+
+### SFR Box
+
+| SFR Box 8 | SFR Box 7 | SFR Box (NB6VAC) |
+|:---:|:---:|:---:|
+| <img src="images/sfr-box-8.svg" alt="SFR Box 8" width="120"> | <img src="images/sfr-box-7.svg" alt="SFR Box 7" width="120"> | <img src="images/sfr-nb6vac.svg" alt="SFR Box NB6VAC" width="120"> |
+| `sfr_box_8` | `sfr_box_7` | `sfr_nb6vac` |
+
+### Bbox (Bouygues)
+
+| Bbox Fibre | Bbox Ultym | Bbox Miami |
+|:---:|:---:|:---:|
+| <img src="images/bbox-fibre.svg" alt="Bbox Fibre" width="120"> | <img src="images/bbox-ultym.svg" alt="Bbox Ultym" width="120"> | <img src="images/bbox-miami.svg" alt="Bbox Miami" width="120"> |
+| `bbox_fibre` | `bbox_ultym` | `bbox_miami` |
 
 ## Screenshots
 
