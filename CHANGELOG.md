@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0.1 - 2026-10-28
+
+### Fixes
+- **Box model in the visual editor**: the model dropdown now lists the detected operator's own models (Livebox, SFR Box, Bbox) instead of always the Freebox ones, so a Bbox model (required by the `model` option) can be picked from the editor.
+- **Performance**: entity discovery and uptime computations are cached instead of being recomputed on every state change.
+- README: the card shows no picture when the box model is unknown and `model` is unset (no Freebox Ultra fallback); the restart button needs the Home Assistant application to be allowed to modify the Freebox settings in Freebox OS; screenshots of the card for every operator.
+
+### Maintenance
+- Internal CSS variables renamed `--fb-*` → `--ibc-*`, leftover Freebox wording removed from operator-generic code.
+- CI: fork-safe screenshots workflow, release gated on `npm test`, `hacs/action` pinned to a tagged release, unused Ruff config removed.
+
 ## 2.0.0 - 2026-10-28
 
 ### Changes
