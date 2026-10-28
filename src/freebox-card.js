@@ -334,6 +334,78 @@ const sfrNB6VACSvg = () => {
   return svgDoc(300, 170, defs, s);
 };
 
+// Bbox (Bouygues): original stylised drawings. The Miami is a low, wide black box with stacked ventilation fins
+// and a thin accent line; the Ultym a tall upright glossy tower with a round front dial; the Fibre a slim
+// rounded matte tower with a column of green status lights and a bright central bar.
+const bboxMiamiSvg = () => {
+  const w = 228;
+  const x = (300 - w) / 2;
+  const yTop = 78;
+  const topH = 18;
+  const frontH = 58;
+  const fy = yTop + topH;
+  const bottom = fy + frontH;
+  const defs = grad("bbm t", [[0, "#26272b"], [0.5, "#141416"], [1, "#0d0d0f"]], 1, 0) + grad("bbmf", [[0, "#1c1c1f"], [1, "#0b0b0d"]]);
+  let s = `<ellipse cx="150" cy="${bottom + 10}" rx="${Math.round(w * 0.5)}" ry="8" opacity=".3"/>`;
+  // Feet.
+  s += `<rect x="${x + 16}" y="${bottom - 2}" width="20" height="8" rx="3" fill="#141417"/><rect x="${x + w - 36}" y="${bottom - 2}" width="20" height="8" rx="3" fill="#141417"/>`;
+  // Glossy top face with a diagonal sheen.
+  const topShape = `M${x + 12} ${yTop} H${x + w - 8} L${x + w} ${fy} H${x} Z`;
+  s += `<path d="${topShape}" fill="url(#bbm t)"/>`;
+  s += `<clipPath id="bbmc"><path d="${topShape}"/></clipPath><path clip-path="url(#bbmc)" d="M${x + 36} ${yTop} L${x + 120} ${yTop} L${x + 60} ${fy} L${x - 6} ${fy} Z" fill="#fff" opacity=".07"/>`;
+  // Front face with stacked ventilation fins.
+  s += `<rect x="${x}" y="${fy}" width="${w}" height="${frontH}" rx="5" fill="url(#bbmf)"/>`;
+  for (let i = 0; i < 4; i++) s += `<rect x="${x + 10}" y="${fy + 10 + i * 10}" width="${w - 20}" height="3" rx="1.5" fill="#000" fill-opacity=".38"/>`;
+  // Thin blue accent line and a small status light.
+  s += `<rect x="${x + 10}" y="${bottom - 7}" width="${w - 20}" height="2" rx="1" fill="#1f6fe0" opacity=".85"/>`;
+  s += `<circle cx="${x + w - 18}" cy="${fy + 11}" r="2" fill="#36c24a"/>`;
+  return svgDoc(300, 170, defs, s);
+};
+const bboxUltymSvg = () => {
+  const w = 104;
+  const h = 150;
+  const x = (300 - w) / 2;
+  const top = 22;
+  const bottom = top + h;
+  const r = 20;
+  const defs = grad("bbu1", [[0, "#2b2c30"], [1, "#101113"]], 1, 0) + grad("bbu2", [[0, "#3a3b40"], [1, "#1a1b1e"]], 1, 0);
+  let s = `<ellipse cx="150" cy="${bottom + 12}" rx="${Math.round(w * 0.5)}" ry="7" opacity=".3"/>`;
+  // Feet.
+  s += `<rect x="${x + 14}" y="${bottom - 4}" width="18" height="9" rx="3" fill="#141417"/><rect x="${x + w - 32}" y="${bottom - 4}" width="18" height="9" rx="3" fill="#141417"/>`;
+  // Glossy upright body with a rounded top.
+  s += `<rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}" fill="url(#bbu1)"/>`;
+  s += `<clipPath id="bbuc"><rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}"/></clipPath><g clip-path="url(#bbuc)">`;
+  s += `<rect x="${x}" y="${top}" width="${w}" height="40" fill="url(#bbu2)"/>`;
+  s += `<rect x="${x + 8}" y="${top + 8}" width="6" height="${h - 24}" rx="3" fill="#fff" opacity=".06"/></g>`;
+  // Round front dial with a soft ring, and two small side buttons.
+  s += `<circle cx="150" cy="${top + 74}" r="26" fill="#17181b" stroke="#000" stroke-opacity=".4"/>`;
+  s += `<circle cx="150" cy="${top + 74}" r="26" fill="none" stroke="#1f6fe0" stroke-width="2" opacity=".55"/>`;
+  s += `<circle cx="150" cy="${top + 74}" r="14" fill="#202226"/>`;
+  s += `<circle cx="${x + 16}" cy="${top + 118}" r="2.2" fill="#54545a"/><circle cx="${x + w - 16}" cy="${top + 118}" r="2.2" fill="#36c24a"/>`;
+  return svgDoc(300, 180, defs, s);
+};
+const bboxFibreSvg = () => {
+  const w = 86;
+  const h = 150;
+  const x = (300 - w) / 2;
+  const top = 24;
+  const bottom = top + h;
+  const r = 30;
+  const defs = grad("bbf", [[0, "#242529"], [1, "#0f1012"]], 1, 0);
+  const G = "#3ad64f";
+  let s = `<ellipse cx="150" cy="${bottom + 12}" rx="${Math.round(w * 0.5)}" ry="6" opacity=".28"/>`;
+  // Slim matte tower with soft rounded corners.
+  s += `<rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}" fill="url(#bbf)"/>`;
+  s += `<clipPath id="bbfc"><rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}"/></clipPath>`;
+  s += `<rect clip-path="url(#bbfc)" x="${x + 7}" y="${top + 14}" width="5" height="${h - 34}" rx="2.5" fill="#fff" opacity=".05"/>`;
+  // Two status lights near the top, a bright central bar, two lights below.
+  s += `<circle cx="${150 - 9}" cy="${top + 34}" r="3" fill="${G}"/><circle cx="${150 + 9}" cy="${top + 34}" r="3" fill="${G}"/>`;
+  s += `<rect x="${150 - 26}" y="${top + 68}" width="52" height="7" rx="3.5" fill="${G}"/>`;
+  s += `<rect x="${150 - 26}" y="${top + 68}" width="52" height="7" rx="3.5" fill="${G}" opacity=".35"/>`;
+  s += `<circle cx="${150 - 9}" cy="${top + 104}" r="3" fill="${G}"/><circle cx="${150 + 9}" cy="${top + 104}" r="3" fill="${G}"/>`;
+  return svgDoc(300, 182, defs, s);
+};
+
 const svgUri = (svg) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
 // Pictures of the box models, by model id (Freebox, Livebox, SFR).
 const IMG_BOX = {
@@ -350,7 +422,18 @@ const IMG_BOX = {
   sfr_box_8: svgUri(sfrBox8Svg()),
   sfr_box_7: svgUri(sfrBox7Svg()),
   sfr_nb6vac: svgUri(sfrNB6VACSvg()),
+  bbox_miami: svgUri(bboxMiamiSvg()),
+  bbox_ultym: svgUri(bboxUltymSvg()),
+  bbox_fibre: svgUri(bboxFibreSvg()),
 };
+// Simple original brand badge for operators without an embedded logo asset: a rounded square tile in the
+// operator's colour with its short name. Identifies the operator without reproducing its official logo artwork.
+const brandLogo = (bg, label, fg = "#ffffff") =>
+  svgUri(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="${bg}"/>` +
+      `<text x="50" y="50" fill="${fg}" font-family="Arial, Helvetica, sans-serif" font-size="${label.length > 3 ? 24 : 34}" font-weight="700" text-anchor="middle" dominant-baseline="central">${label}</text></svg>`
+  );
+
 const IMG_LOGO = "__IMG_LOGO__";
 const FREE_URL = "https://www.free.fr";
 const ADMIN_URL = "https://mafreebox.freebox.fr";
@@ -521,7 +604,7 @@ const OPERATORS = {
     keys: { rate_down: "rate_down", rate_up: "rate_up", missed: "missed", wifi: "wifi", mark_read: "mark_calls_as_read", reboot: "reboot", partition: "partition_free_space", raid: "raid_degraded" },
   },
   livebox: {
-    platform: "livebox", name: "Livebox", color: "#ff7900", logo: null,
+    platform: "livebox", name: "Livebox", color: "#ff7900", logo: brandLogo("#ff7900", "Orange"),
     website: "https://www.orange.fr", admin: "http://livebox.home",
     models: [
       { id: "livebox_7", name: "Livebox 7", re: /livebox\s*7|lb7/i },
@@ -533,7 +616,7 @@ const OPERATORS = {
     keys: { rate_down: "down_rate", rate_up: "up_rate", missed: "callers", wifi: "wifi_switch", mark_read: "cmissed_clear_btn", reboot: "restart_btn" },
   },
   sfr_box: {
-    platform: "sfr_box", name: "SFR Box", color: "#e2001a", logo: null,
+    platform: "sfr_box", name: "SFR Box", color: "#e2001a", logo: brandLogo("#e2001a", "SFR"),
     website: "https://www.sfr.fr", admin: "http://192.168.1.1",
     models: [
       { id: "sfr_box_8", name: "SFR Box 8", re: /box\s*8|nb8|fast\s*5[0-9]/i },
@@ -544,8 +627,13 @@ const OPERATORS = {
     keys: { rate_down: "dsl_rate_down", rate_up: "dsl_rate_up", reboot: "system_reboot" },
   },
   bbox: {
-    platform: "bbox", name: "Bbox", color: "#1246a0", logo: null,
-    website: "https://www.bouyguestelecom.fr", admin: "https://mabbox.bytel.fr", models: [],
+    platform: "bbox", name: "Bbox", color: "#1246a0", logo: brandLogo("#1246a0", "Bbox"),
+    website: "https://www.bouyguestelecom.fr", admin: "https://mabbox.bytel.fr",
+    models: [
+      { id: "bbox_fibre", name: "Bbox Fibre", re: /fibre|fiber/i },
+      { id: "bbox_ultym", name: "Bbox Ultym", re: /ultym/i },
+      { id: "bbox_miami", name: "Bbox Miami", re: /miami/i },
+    ],
     // Legacy integration: hardcoded English names, no translation keys, so it is discovered by entity-id suffix.
     keys: {}, legacy: { rate_down: /_currently_used_download_bandwidth$/, rate_up: /_currently_used_upload_bandwidth$/ },
   },
