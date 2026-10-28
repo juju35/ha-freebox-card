@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.22.0 - 2026-10-28
+
+### Changes
+- **SFR Box pictures**: original stylised drawings of the SFR Box 8 (rounded cube with a glossy top and a mesh body), the SFR Box 7 (tall slim upright mesh box on a foot) and the NB6VAC / Box Plus/Power (low, wide, glossy box with a status-light column and a ventilation grille), detected from the device model. Stylised originals, no logos.
+
 ## 1.21.0 - 2026-10-28
 
 ### Fixes
