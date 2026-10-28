@@ -130,49 +130,135 @@ const revolutionSvg = () => {
   s += `<rect x="6" y="26" width="20" height="13" rx="1.5" fill="#d61f1f"/><rect x="9" y="29" width="8" height="4" fill="#fff"/></g>`;
   return svgDoc(320, 136, defs, s);
 };
-// Orange Livebox: original stylised silhouettes of the box form factors (no logo), with the brand orange used
-// only as a small accent. The recent boxes are white upright towers (drawn head-on, soft cylindrical gradient,
-// floor shadow), the Livebox 4 a flat dark slab, the Livebox S a small white box.
+// Orange Livebox: original stylised drawings of each model's form factor (no logo), with the brand orange used
+// only as an accent. The Livebox 6 and 7 are dark anthracite upright boxes with a flat top, a fabric-effect
+// finish, an orange status light line (the 7 adds a white dot) and a small front screen; the Livebox 5 is a
+// light upright rounded box; the Livebox 4 a dark box with a rounded top and a front display; the Livebox S a
+// small light box.
 const LB = "#ff7900";
-const liveboxTower = ({ w, h, r, accentY = 0, led = false }) => {
+// Dark upright box with a flat top (Livebox 6 / 7). `diode` adds the white dot under the orange status line.
+const liveboxDark = ({ w, h, diode }) => {
   const x = (300 - w) / 2;
   const bottom = 172;
   const top = bottom - h;
-  const defs = grad("lb-body", [[0, "#fdfdfd"], [0.5, "#f1f1ef"], [1, "#d6d6d3"]], 1, 0);
-  let s = `<ellipse cx="150" cy="${bottom + 3}" rx="${(w * 0.52).toFixed(0)}" ry="6" opacity=".22"/>`;
-  s += `<path d="M${x} ${top + r} Q${x} ${top} ${x + r} ${top} H${x + w - r} Q${x + w} ${top} ${x + w} ${top + r} V${bottom - 10} Q${x + w} ${bottom} ${x + w - 10} ${bottom} H${x + 10} Q${x} ${bottom} ${x} ${bottom - 10} Z" fill="url(#lb-body)"/>`;
-  s += `<rect x="${x + 7}" y="${top + r + 6}" width="5" height="${h - r - 24}" rx="2.5" fill="#ffffff" opacity=".65"/>`;
-  if (accentY) s += `<rect x="${x}" y="${top + accentY}" width="${w}" height="3.5" fill="${LB}" opacity=".9"/>`;
-  if (led) s += `<circle cx="150" cy="${bottom - 14}" r="2.6" fill="${LB}"/><circle cx="150" cy="${bottom - 14}" r="5" fill="${LB}" opacity=".3"/>`;
+  const r = 14;
+  const defs =
+    grad("lbd", [[0, "#53555a"], [0.5, "#333539"], [1, "#1b1c1f"]], 1, 0) +
+    '<filter id="lbd-g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4"/></filter>';
+  let s = `<ellipse cx="150" cy="${bottom + 3}" rx="${Math.round(w * 0.5)}" ry="6" opacity=".3"/>`;
+  s += `<rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}" fill="url(#lbd)"/>`;
+  // Fabric-effect: faint vertical lines.
+  for (let i = 1; i < 12; i++)
+    s += `<line x1="${(x + (i * w) / 12).toFixed(1)}" y1="${top + 8}" x2="${(x + (i * w) / 12).toFixed(1)}" y2="${bottom - 8}" stroke="#000" stroke-opacity=".07"/>`;
+  s += `<rect x="${x + 6}" y="${top + 12}" width="4" height="${h - 28}" rx="2" fill="#fff" opacity=".10"/>`;
+  // Orange status light line near the top, with a soft glow.
+  const ly = top + 22;
+  s += `<rect x="${x + 16}" y="${ly - 2}" width="${w - 32}" height="7" rx="3.5" fill="${LB}" opacity=".5" filter="url(#lbd-g)"/>`;
+  s += `<rect x="${x + 16}" y="${ly}" width="${w - 32}" height="3" rx="1.5" fill="${LB}"/>`;
+  if (diode) s += `<circle cx="150" cy="${ly + 11}" r="1.8" fill="#fff"/>`;
+  // Small front e-ink screen.
+  s += `<rect x="${(300 - 44) / 2}" y="${bottom - 14 - 26}" width="44" height="26" rx="4" fill="#111214" stroke="#000" stroke-opacity=".35"/>`;
   return svgDoc(300, 182, defs, s);
 };
-const livebox5Svg = () => liveboxTower({ w: 92, h: 92, r: 18, led: true });
-const livebox6Svg = () => liveboxTower({ w: 98, h: 120, r: 46 });
-const livebox7Svg = () => liveboxTower({ w: 96, h: 126, r: 16, accentY: 14 });
-const livebox4Svg = () => {
-  const w = 240;
-  const h = 54;
+const livebox6Svg = () => liveboxDark({ w: 94, h: 116, diode: false });
+const livebox7Svg = () => liveboxDark({ w: 102, h: 128, diode: true });
+// Light upright rounded box (Livebox 5).
+// Low, wide black box with a diagonally ridged top (Livebox 5): a tall ridged top face and a front face with
+// three vertical orange indicator bars over small icons on the left.
+const livebox5Svg = () => {
+  const w = 252;
   const x = (300 - w) / 2;
-  const y = 96;
-  const defs = grad("lb4-f", [[0, "#2b2b2e"], [1, "#161618"]]) + grad("lb4-t", [[0, "#3a3a3d"], [1, "#2a2a2d"]], 1, 0);
-  let s = `<ellipse cx="150" cy="${y + h + 16}" rx="${(w * 0.52).toFixed(0)}" ry="7" opacity=".3"/>`;
-  s += `<path d="M${x + 14} ${y} H${x + w} L${x + w - 14} ${y + 14} H${x} Z" fill="url(#lb4-t)"/>`;
-  s += `<rect x="${x}" y="${y + 14}" width="${w}" height="${h}" rx="5" fill="url(#lb4-f)"/>`;
-  s += `<rect x="${x + 16}" y="${y + h}" width="${w - 32}" height="3" rx="1.5" fill="#4a4a4e"/>`;
-  s += `<circle cx="${x + w - 24}" cy="${y + 30}" r="3" fill="${LB}"/>`;
-  return svgDoc(300, 180, defs, s);
+  const yTop = 80;
+  const topH = 34;
+  const frontH = 42;
+  const fy = yTop + topH;
+  const defs = grad("lb5t", [[0, "#2d2d31"], [1, "#161618"]], 1, 0) + grad("lb5f", [[0, "#232326"], [0.5, "#17171a"], [1, "#101012"]]);
+  const topShape = `M${x + 18} ${yTop} H${x + w - 10} L${x + w} ${fy} H${x} Z`;
+  let s = `<ellipse cx="150" cy="${fy + frontH + 10}" rx="${Math.round(w * 0.5)}" ry="7" opacity=".32"/>`;
+  s += `<path d="${topShape}" fill="url(#lb5t)"/>`;
+  // Diagonal ridge texture over the top face.
+  s += `<clipPath id="lb5clip"><path d="${topShape}"/></clipPath><g clip-path="url(#lb5clip)">`;
+  for (let i = -4; i < 40; i++) s += `<line x1="${x + i * 8}" y1="${yTop - 6}" x2="${x + i * 8 + 44}" y2="${fy + 6}" stroke="#000" stroke-opacity=".3" stroke-width="2"/>`;
+  s += "</g>";
+  // Front face.
+  s += `<rect x="${x}" y="${fy}" width="${w}" height="${frontH}" rx="4" fill="url(#lb5f)"/>`;
+  // Three vertical orange indicator bars with small icons under them.
+  const bx = x + 52;
+  const gap = 22;
+  for (let i = 0; i < 3; i++) s += `<rect x="${bx + i * gap}" y="${fy + 7}" width="4" height="15" rx="2" fill="${LB}"/>`;
+  const iy = fy + frontH - 9;
+  s += `<circle cx="${bx + 2}" cy="${iy}" r="3" fill="none" stroke="#9a9a9e" stroke-width="1"/><line x1="${bx - 1}" y1="${iy}" x2="${bx + 5}" y2="${iy}" stroke="#9a9a9e" stroke-width=".7"/>`;
+  s += `<path d="M${bx + gap - 3} ${iy + 1} a5 5 0 0 1 10 0 M${bx + gap - 1} ${iy + 2.5} a3 3 0 0 1 6 0" fill="none" stroke="#9a9a9e" stroke-width="1" stroke-linecap="round"/>`;
+  s += `<path d="M${bx + 2 * gap - 1} ${iy - 3} q0 6 6 6 l0 -2 -3 .6 q-.8 -2 -.8 -4.6 z" fill="#9a9a9e"/>`;
+  return svgDoc(300, 170, defs, s);
 };
-const liveboxSSvg = () => {
-  const w = 128;
-  const h = 60;
+// Low, wide black box seen from the front (Livebox 4): a short top face and a taller glossy front face carrying a
+// strip of small orange indicator lights on the left and a few neutral touch marks on the right, with a corner nub.
+const livebox4Svg = () => {
+  const w = 252;
   const x = (300 - w) / 2;
-  const y = 94;
-  const defs = grad("lbs-f", [[0, "#ffffff"], [1, "#e4e4e2"]]) + grad("lbs-t", [[0, "#ffffff"], [1, "#efefed"]], 1, 0);
-  let s = `<ellipse cx="150" cy="${y + h + 14}" rx="${(w * 0.5).toFixed(0)}" ry="6" opacity=".22"/>`;
-  s += `<path d="M${x + 16} ${y} H${x + w} L${x + w - 16} ${y + 16} H${x} Z" fill="url(#lbs-t)"/>`;
-  s += `<rect x="${x}" y="${y + 16}" width="${w}" height="${h}" rx="8" fill="url(#lbs-f)"/>`;
-  s += `<circle cx="${x + 22}" cy="${y + 16 + h / 2}" r="2.4" fill="${LB}"/>`;
-  return svgDoc(300, 180, defs, s);
+  const yTop = 86;
+  const topH = 18;
+  const frontH = 48;
+  const fy = yTop + topH;
+  const defs = grad("lb4t", [[0, "#2c2c30"], [1, "#171719"]], 1, 0) + grad("lb4f", [[0, "#242427"], [0.5, "#19191b"], [1, "#101012"]]);
+  let s = `<ellipse cx="150" cy="${fy + frontH + 10}" rx="${Math.round(w * 0.5)}" ry="7" opacity=".32"/>`;
+  // Top face (slight perspective) with an abstract criss-cross line pattern on the left and a soft sheen on the right.
+  const lb4top = `M${x + 12} ${yTop} H${x + w - 12} L${x + w} ${fy} H${x} Z`;
+  s += `<path d="${lb4top}" fill="url(#lb4t)"/>`;
+  s += `<clipPath id="lb4clip"><path d="${lb4top}"/></clipPath><g clip-path="url(#lb4clip)" stroke="#5c5c62" stroke-opacity=".55" stroke-width="1.3" fill="none" stroke-linecap="round">`;
+  s += `<path d="M${x + 18} ${fy - 2} L${x + 92} ${yTop + 2}"/><path d="M${x + 18} ${yTop + 3} L${x + 104} ${fy - 2}"/><path d="M${x + 50} ${fy - 2} L${x + 112} ${yTop + 4}"/><path d="M${x + 34} ${yTop + 2} L${x + 74} ${fy - 2}"/>`;
+  s += "</g>";
+  s += `<path d="M${Math.round(x + w * 0.52)} ${yTop + 5} H${x + w - 16} L${x + w - 8} ${fy - 4} H${Math.round(x + w * 0.48)} Z" fill="#ffffff" opacity=".04"/>`;
+  // Front face.
+  s += `<rect x="${x}" y="${fy}" width="${w}" height="${frontH}" rx="5" fill="url(#lb4f)"/>`;
+  s += `<rect x="${x + 6}" y="${fy + 4}" width="${w - 12}" height="4" rx="2" fill="#ffffff" opacity=".05"/>`;
+  // Orange indicator lights (abstract): a dot, Wi-Fi arcs, a phone tick, a small square — evenly spaced.
+  const cy = fy + frontH / 2 + 2;
+  const gx = x + 54;
+  const gap = 26;
+  s += `<circle cx="${gx}" cy="${cy}" r="3.4" fill="none" stroke="${LB}" stroke-width="1.6"/><circle cx="${gx}" cy="${cy}" r="1" fill="${LB}"/>`;
+  s += `<path d="M${gx + gap - 5} ${cy + 1} a5 5 0 0 1 10 0 M${gx + gap - 3} ${cy + 2.5} a3 3 0 0 1 6 0" fill="none" stroke="${LB}" stroke-width="1.5" stroke-linecap="round"/><circle cx="${gx + gap}" cy="${cy + 4.5}" r="1" fill="${LB}"/>`;
+  s += `<path d="M${gx + 2 * gap - 4} ${cy - 4} q0 8 8 8 l0 -3 -4 1 q-1 -3 -1 -6 z" fill="${LB}"/>`;
+  s += `<rect x="${gx + 3 * gap - 4}" y="${cy - 4}" width="8" height="7" rx="1.5" fill="${LB}"/>`;
+  // Right side: separator, two neutral touch marks and a corner antenna nub.
+  s += `<rect x="${x + w - 88}" y="${fy + 8}" width="1.2" height="${frontH - 16}" fill="#3a3a3d"/>`;
+  s += `<rect x="${x + w - 70}" y="${cy - 5}" width="2.4" height="10" rx="1.2" fill="#6a6a6e"/>`;
+  s += `<path d="M${x + w - 54} ${cy + 3} a6 6 0 0 1 12 0 M${x + w - 51} ${cy + 1.5} a3 3 0 0 1 6 0" fill="none" stroke="#6a6a6e" stroke-width="1.4" stroke-linecap="round"/>`;
+  s += `<rect x="${x + w - 30}" y="${cy - 4}" width="12" height="8" rx="1.5" fill="none" stroke="#6a6a6e" stroke-width="1.1"/>`;
+  return svgDoc(300, 162, defs, s);
+};
+// Small light box (Livebox S).
+// Dark upright box on feet, fabric-textured rounded top and a smooth lower half, with a central front screen
+// showing a Wi-Fi glyph (Livebox S).
+const liveboxSSvg = () => {
+  const w = 132;
+  const x = (300 - w) / 2;
+  const top = 26;
+  const bodyH = 128;
+  const bottom = top + bodyH;
+  const r = 24;
+  const split = top + 66;
+  const defs = grad("lbs1", [[0, "#474a4f"], [1, "#2e3034"]], 1, 0) + grad("lbs2", [[0, "#3b3d41"], [1, "#282a2d"]], 1, 0);
+  let s = `<ellipse cx="150" cy="${bottom + 30}" rx="${Math.round(w * 0.5)}" ry="6" opacity=".28"/>`;
+  // Feet.
+  s += `<path d="M${x + 32} ${bottom - 6} L${x + 8} ${bottom + 26} M${x + w - 32} ${bottom - 6} L${x + w - 8} ${bottom + 26}" stroke="#303236" stroke-width="8" stroke-linecap="round"/>`;
+  s += `<path d="M${x - 2} ${bottom + 24} h42 M${x + w - 40} ${bottom + 24} h42" stroke="#2b2d30" stroke-width="7" stroke-linecap="round"/>`;
+  // Body (rounded rect), split into a fabric top and a smooth bottom by colour, with fabric dots clipped to it.
+  s += `<rect x="${x}" y="${top}" width="${w}" height="${bodyH}" rx="${r}" fill="url(#lbs2)"/>`;
+  s += `<clipPath id="lbsc"><rect x="${x}" y="${top}" width="${w}" height="${bodyH}" rx="${r}"/></clipPath><g clip-path="url(#lbsc)">`;
+  s += `<rect x="${x}" y="${top}" width="${w}" height="${split - top}" fill="url(#lbs1)"/>`;
+  for (let yy = top + 9; yy < split - 4; yy += 6) for (let xx = x + 9; xx < x + w - 6; xx += 6) s += `<circle cx="${xx}" cy="${yy}" r=".8" fill="#000" fill-opacity=".18"/>`;
+  s += `<rect x="${x + 7}" y="${top + r}" width="4" height="46" rx="2" fill="#fff" opacity=".07"/></g>`;
+  // Central front screen with a status line and a Wi-Fi glyph.
+  const pw = 46;
+  const ph = 54;
+  const px = 150 - pw / 2;
+  const py = top + 34;
+  s += `<rect x="${px}" y="${py}" width="${pw}" height="${ph}" rx="9" fill="#24262a" stroke="#1a1b1e"/>`;
+  s += `<rect x="144" y="${py + 7}" width="12" height="2.4" rx="1.2" fill="#8d8d91"/>`;
+  s += `<g stroke="#d2d2d5" stroke-width="2" fill="none" stroke-linecap="round"><path d="M142 ${py + 30} a10 10 0 0 1 16 0"/><path d="M145.5 ${py + 34} a5.5 5.5 0 0 1 9 0"/></g><circle cx="150" cy="${py + 39}" r="1.6" fill="#d2d2d5"/>`;
+  return svgDoc(300, 200, defs, s);
 };
 
 const svgUri = (svg) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
