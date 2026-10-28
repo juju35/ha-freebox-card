@@ -10,7 +10,10 @@ const b64 = (file) => readFileSync(`${root}images/${file}`).toString("base64");
 
 const out = readFileSync(`${root}src/freebox-card.js`, "utf8")
   .replace("__VERSION__", pkg.version)
-  .replace("__IMG_LOGO__", `data:image/webp;base64,${b64("free.webp")}`);
+  .replace("__IMG_LOGO__", `data:image/svg+xml;base64,${b64("free.svg")}`)
+  .replace("__IMG_ORANGE__", `data:image/svg+xml;base64,${b64("orange.svg")}`)
+  .replace("__IMG_SFR__", `data:image/svg+xml;base64,${b64("sfr.svg")}`)
+  .replace("__IMG_BBOX__", `data:image/svg+xml;base64,${b64("bbox.svg")}`);
 
 const target = `${root}dist/freebox-card.js`;
 mkdirSync(`${root}dist`, { recursive: true });

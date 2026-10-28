@@ -426,15 +426,10 @@ const IMG_BOX = {
   bbox_ultym: svgUri(bboxUltymSvg()),
   bbox_fibre: svgUri(bboxFibreSvg()),
 };
-// Simple original brand badge for operators without an embedded logo asset: a rounded square tile in the
-// operator's colour with its short name. Identifies the operator without reproducing its official logo artwork.
-const brandLogo = (bg, label, fg = "#ffffff") =>
-  svgUri(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="${bg}"/>` +
-      `<text x="50" y="50" fill="${fg}" font-family="Arial, Helvetica, sans-serif" font-size="${label.length > 3 ? 24 : 34}" font-weight="700" text-anchor="middle" dominant-baseline="central">${label}</text></svg>`
-  );
-
 const IMG_LOGO = "__IMG_LOGO__";
+const IMG_ORANGE = "__IMG_ORANGE__";
+const IMG_SFR = "__IMG_SFR__";
+const IMG_BBOX = "__IMG_BBOX__";
 const FREE_URL = "https://www.free.fr";
 const ADMIN_URL = "https://mafreebox.freebox.fr";
 
@@ -604,7 +599,7 @@ const OPERATORS = {
     keys: { rate_down: "rate_down", rate_up: "rate_up", missed: "missed", wifi: "wifi", mark_read: "mark_calls_as_read", reboot: "reboot", partition: "partition_free_space", raid: "raid_degraded" },
   },
   livebox: {
-    platform: "livebox", name: "Livebox", color: "#ff7900", logo: brandLogo("#ff7900", "Orange"),
+    platform: "livebox", name: "Livebox", color: "#ff7900", logo: IMG_ORANGE,
     website: "https://www.orange.fr", admin: "http://livebox.home",
     models: [
       { id: "livebox_7", name: "Livebox 7", re: /livebox\s*7|lb7/i },
@@ -616,7 +611,7 @@ const OPERATORS = {
     keys: { rate_down: "down_rate", rate_up: "up_rate", missed: "callers", wifi: "wifi_switch", mark_read: "cmissed_clear_btn", reboot: "restart_btn" },
   },
   sfr_box: {
-    platform: "sfr_box", name: "SFR Box", color: "#e2001a", logo: brandLogo("#e2001a", "SFR"),
+    platform: "sfr_box", name: "SFR Box", color: "#e2001a", logo: IMG_SFR,
     website: "https://www.sfr.fr", admin: "http://192.168.1.1",
     models: [
       { id: "sfr_box_8", name: "SFR Box 8", re: /box\s*8|nb8|fast\s*5[0-9]/i },
@@ -627,7 +622,7 @@ const OPERATORS = {
     keys: { rate_down: "dsl_rate_down", rate_up: "dsl_rate_up", reboot: "system_reboot" },
   },
   bbox: {
-    platform: "bbox", name: "Bbox", color: "#1246a0", logo: brandLogo("#1246a0", "Bbox"),
+    platform: "bbox", name: "Bbox", color: "#1246a0", logo: IMG_BBOX,
     website: "https://www.bouyguestelecom.fr", admin: "https://mabbox.bytel.fr",
     models: [
       { id: "bbox_fibre", name: "Bbox Fibre", re: /fibre|fiber/i },

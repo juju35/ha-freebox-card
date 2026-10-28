@@ -203,7 +203,7 @@ Thresholds:
 
 ```bash
 npm install
-npm run build        # bundles src/freebox-card.js + images/free.webp into dist/freebox-card.js
+npm run build        # bundles src/freebox-card.js + the embedded logos (images/free.svg…) into dist/freebox-card.js
 npm run check        # builds and checks the card (run in CI)
 npm run screenshots  # renders the cards with mock data (scripts/mock-states.mjs) into screenshots/ (and fan.gif, needs ffmpeg)
 ```
