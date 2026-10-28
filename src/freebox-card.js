@@ -130,14 +130,64 @@ const revolutionSvg = () => {
   s += `<rect x="6" y="26" width="20" height="13" rx="1.5" fill="#d61f1f"/><rect x="9" y="29" width="8" height="4" fill="#fff"/></g>`;
   return svgDoc(320, 136, defs, s);
 };
+// Orange Livebox: original stylised silhouettes of the box form factors (no logo), with the brand orange used
+// only as a small accent. The recent boxes are white upright towers (drawn head-on, soft cylindrical gradient,
+// floor shadow), the Livebox 4 a flat dark slab, the Livebox S a small white box.
+const LB = "#ff7900";
+const liveboxTower = ({ w, h, r, accentY = 0, led = false }) => {
+  const x = (300 - w) / 2;
+  const bottom = 172;
+  const top = bottom - h;
+  const defs = grad("lb-body", [[0, "#fdfdfd"], [0.5, "#f1f1ef"], [1, "#d6d6d3"]], 1, 0);
+  let s = `<ellipse cx="150" cy="${bottom + 3}" rx="${(w * 0.52).toFixed(0)}" ry="6" opacity=".22"/>`;
+  s += `<path d="M${x} ${top + r} Q${x} ${top} ${x + r} ${top} H${x + w - r} Q${x + w} ${top} ${x + w} ${top + r} V${bottom - 10} Q${x + w} ${bottom} ${x + w - 10} ${bottom} H${x + 10} Q${x} ${bottom} ${x} ${bottom - 10} Z" fill="url(#lb-body)"/>`;
+  s += `<rect x="${x + 7}" y="${top + r + 6}" width="5" height="${h - r - 24}" rx="2.5" fill="#ffffff" opacity=".65"/>`;
+  if (accentY) s += `<rect x="${x}" y="${top + accentY}" width="${w}" height="3.5" fill="${LB}" opacity=".9"/>`;
+  if (led) s += `<circle cx="150" cy="${bottom - 14}" r="2.6" fill="${LB}"/><circle cx="150" cy="${bottom - 14}" r="5" fill="${LB}" opacity=".3"/>`;
+  return svgDoc(300, 182, defs, s);
+};
+const livebox5Svg = () => liveboxTower({ w: 92, h: 92, r: 18, led: true });
+const livebox6Svg = () => liveboxTower({ w: 98, h: 120, r: 46 });
+const livebox7Svg = () => liveboxTower({ w: 96, h: 126, r: 16, accentY: 14 });
+const livebox4Svg = () => {
+  const w = 240;
+  const h = 54;
+  const x = (300 - w) / 2;
+  const y = 96;
+  const defs = grad("lb4-f", [[0, "#2b2b2e"], [1, "#161618"]]) + grad("lb4-t", [[0, "#3a3a3d"], [1, "#2a2a2d"]], 1, 0);
+  let s = `<ellipse cx="150" cy="${y + h + 16}" rx="${(w * 0.52).toFixed(0)}" ry="7" opacity=".3"/>`;
+  s += `<path d="M${x + 14} ${y} H${x + w} L${x + w - 14} ${y + 14} H${x} Z" fill="url(#lb4-t)"/>`;
+  s += `<rect x="${x}" y="${y + 14}" width="${w}" height="${h}" rx="5" fill="url(#lb4-f)"/>`;
+  s += `<rect x="${x + 16}" y="${y + h}" width="${w - 32}" height="3" rx="1.5" fill="#4a4a4e"/>`;
+  s += `<circle cx="${x + w - 24}" cy="${y + 30}" r="3" fill="${LB}"/>`;
+  return svgDoc(300, 180, defs, s);
+};
+const liveboxSSvg = () => {
+  const w = 128;
+  const h = 60;
+  const x = (300 - w) / 2;
+  const y = 94;
+  const defs = grad("lbs-f", [[0, "#ffffff"], [1, "#e4e4e2"]]) + grad("lbs-t", [[0, "#ffffff"], [1, "#efefed"]], 1, 0);
+  let s = `<ellipse cx="150" cy="${y + h + 14}" rx="${(w * 0.5).toFixed(0)}" ry="6" opacity=".22"/>`;
+  s += `<path d="M${x + 16} ${y} H${x + w} L${x + w - 16} ${y + 16} H${x} Z" fill="url(#lbs-t)"/>`;
+  s += `<rect x="${x}" y="${y + 16}" width="${w}" height="${h}" rx="8" fill="url(#lbs-f)"/>`;
+  s += `<circle cx="${x + 22}" cy="${y + 16 + h / 2}" r="2.4" fill="${LB}"/>`;
+  return svgDoc(300, 180, defs, s);
+};
+
 const svgUri = (svg) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
-// Pictures of the Freebox models, by model id.
+// Pictures of the box models, by model id (Freebox and Livebox).
 const IMG_BOX = {
   ultra: svgUri(ultraSvg()),
   pop: svgUri(popSvg()),
   delta: svgUri(deltaSvg()),
   revolution: svgUri(revolutionSvg()),
   mini_4k: svgUri(mini4kSvg()),
+  livebox_4: svgUri(livebox4Svg()),
+  livebox_5: svgUri(livebox5Svg()),
+  livebox_6: svgUri(livebox6Svg()),
+  livebox_7: svgUri(livebox7Svg()),
+  livebox_s: svgUri(liveboxSSvg()),
 };
 const IMG_LOGO = "__IMG_LOGO__";
 const FREE_URL = "https://www.free.fr";
@@ -310,7 +360,14 @@ const OPERATORS = {
   },
   livebox: {
     platform: "livebox", name: "Livebox", color: "#ff7900", logo: null,
-    website: "https://www.orange.fr", admin: "http://livebox.home", models: [],
+    website: "https://www.orange.fr", admin: "http://livebox.home",
+    models: [
+      { id: "livebox_7", name: "Livebox 7", re: /livebox\s*7|lb7/i },
+      { id: "livebox_6", name: "Livebox 6", re: /livebox\s*6|lb6/i },
+      { id: "livebox_5", name: "Livebox 5", re: /livebox\s*5|lb5/i },
+      { id: "livebox_4", name: "Livebox 4", re: /livebox\s*4|lb4/i },
+      { id: "livebox_s", name: "Livebox S", re: /livebox\s*s\b|lbs\b/i },
+    ],
     keys: { rate_down: "down_rate", rate_up: "up_rate", missed: "callers", wifi: "wifi_switch", mark_read: "cmissed_clear_btn", reboot: "restart_btn" },
   },
   sfr_box: {

@@ -12,10 +12,13 @@ import { load } from "../test/load.mjs";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const cardJs = readFileSync(`${root}dist/freebox-card.js`, "utf8");
 
-// README copies of the drawn model pictures: images/freebox-<model>.svg.
-const { IMG_BOX } = load("freebox-card.js", ["IMG_BOX"]);
-for (const [id, uri] of Object.entries(IMG_BOX)) {
-  writeFileSync(`${root}images/freebox-${id.replace(/_/g, "-")}.svg`, `${decodeURIComponent(uri.slice("data:image/svg+xml,".length))}\n`);
+// README copies of the drawn model pictures, per operator: images/freebox-<model>.svg, images/livebox-<model>.svg.
+const { IMG_BOX, OPERATORS } = load("freebox-card.js", ["IMG_BOX", "OPERATORS"]);
+for (const op of Object.values(OPERATORS)) {
+  for (const m of op.models) {
+    const base = (op.platform === "freebox" ? `freebox-${m.id}` : m.id).replace(/_/g, "-");
+    writeFileSync(`${root}images/${base}.svg`, `${decodeURIComponent(IMG_BOX[m.id].slice("data:image/svg+xml,".length))}\n`);
+  }
 }
 
 const THEMES = {

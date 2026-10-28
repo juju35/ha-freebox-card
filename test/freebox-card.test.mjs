@@ -196,13 +196,16 @@ test("the model is detected from the device and can be forced with the model opt
   assert.equal(MODELS.map((m) => m.id).join(), "ultra,pop,delta,revolution,mini_4k");
 });
 
-test("every model has its drawn picture, also shown in the README", async () => {
-  const { MODELS, IMG_BOX } = load("freebox-card.js", ["MODELS", "IMG_BOX"]);
+test("every model of every operator has its drawn picture, also shown in the README", async () => {
+  const { OPERATORS, IMG_BOX } = load("freebox-card.js", ["OPERATORS", "IMG_BOX"]);
   const { readFileSync } = await import("node:fs");
-  for (const m of MODELS) {
-    assert.match(IMG_BOX[m.id], /^data:image\/svg\+xml,/, m.id);
-    // images/freebox-<model>.svg is the README copy of the same drawing (npm run screenshots writes it).
-    const file = readFileSync(new URL(`../images/freebox-${m.id.replace(/_/g, "-")}.svg`, import.meta.url), "utf8");
-    assert.equal(file.trim(), decodeURIComponent(IMG_BOX[m.id].slice("data:image/svg+xml,".length)), m.id);
+  for (const op of Object.values(OPERATORS)) {
+    for (const m of op.models) {
+      assert.match(IMG_BOX[m.id], /^data:image\/svg\+xml,/, m.id);
+      // images/<operator>-<model>.svg is the README copy of the same drawing (npm run screenshots writes it).
+      const base = (op.platform === "freebox" ? `freebox-${m.id}` : m.id).replace(/_/g, "-");
+      const file = readFileSync(new URL(`../images/${base}.svg`, import.meta.url), "utf8");
+      assert.equal(file.trim(), decodeURIComponent(IMG_BOX[m.id].slice("data:image/svg+xml,".length)), m.id);
+    }
   }
 });
