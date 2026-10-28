@@ -261,8 +261,81 @@ const liveboxSSvg = () => {
   return svgDoc(300, 200, defs, s);
 };
 
+// SFR Box: original stylised drawings. The Box 8 is a dark rounded cube with a glossy top and a mesh body; the
+// Box 7 a tall slim upright black box with a mesh grille and a column of status lights, on a foot.
+const sfrBox8Svg = () => {
+  const w = 128;
+  const x = (300 - w) / 2;
+  const top = 50;
+  const h = 110;
+  const bottom = top + h;
+  const r = 28;
+  const glossH = 30;
+  const defs = grad("sfr8b", [[0, "#202124"], [1, "#0f1012"]], 1, 0) + grad("sfr8g", [[0, "#34353a"], [1, "#191a1d"]], 1, 0);
+  let s = `<ellipse cx="150" cy="${bottom + 8}" rx="${Math.round(w * 0.5)}" ry="8" opacity=".3"/>`;
+  // Single rounded-cube body, clipped so the top band is glossy and the rest is a mesh grille.
+  s += `<rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}" fill="url(#sfr8b)"/>`;
+  s += `<clipPath id="sfr8c"><rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}"/></clipPath><g clip-path="url(#sfr8c)">`;
+  s += `<rect x="${x}" y="${top}" width="${w}" height="${glossH}" fill="url(#sfr8g)"/>`;
+  s += `<ellipse cx="${Math.round(x + w * 0.4)}" cy="${top + 9}" rx="${Math.round(w * 0.3)}" ry="4" fill="#fff" opacity=".07"/>`;
+  for (let yy = top + glossH + 6; yy < bottom - 4; yy += 4) for (let xx = x + 8; xx < x + w - 6; xx += 4) s += `<circle cx="${xx}" cy="${yy}" r=".7" fill="#000" fill-opacity=".4"/>`;
+  s += "</g>";
+  s += `<circle cx="${x + w - 28}" cy="${top + 15}" r="2" fill="#7fb0e0"/>`;
+  return svgDoc(300, 176, defs, s);
+};
+const sfrBox7Svg = () => {
+  const w = 72;
+  const h = 138;
+  const x = (300 - w) / 2;
+  const top = 22;
+  const bottom = top + h;
+  const r = 10;
+  const defs = grad("sfr7", [[0, "#242528"], [1, "#101113"]], 1, 0);
+  let s = `<ellipse cx="150" cy="${bottom + 14}" rx="46" ry="7" opacity=".3"/>`;
+  // Foot.
+  s += `<rect x="${150 - 4}" y="${bottom - 6}" width="8" height="12" fill="#17181a"/><rect x="${150 - 26}" y="${bottom + 2}" width="52" height="7" rx="3" fill="#1a1b1d"/>`;
+  // Body.
+  s += `<rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}" fill="url(#sfr7)"/>`;
+  // Small ridges on the top-left.
+  for (let i = 0; i < 5; i++) s += `<line x1="${x + 10 + i * 5}" y1="${top + 5}" x2="${x + 16 + i * 5}" y2="${top + 11}" stroke="#000" stroke-opacity=".3" stroke-width="1.4"/>`;
+  // Column of small status lights on the left.
+  for (let i = 0; i < 4; i++) s += `<circle cx="${x + 14}" cy="${top + 42 + i * 20}" r="2.6" fill="none" stroke="#b7b7bb" stroke-width="1"/>`;
+  // Mesh grille (right).
+  s += `<clipPath id="sfr7c"><rect x="${x + 26}" y="${top + 16}" width="${w - 34}" height="${h - 30}" rx="6"/></clipPath><g clip-path="url(#sfr7c)">`;
+  for (let yy = top + 18; yy < bottom - 12; yy += 4) for (let xx = x + 28; xx < x + w - 6; xx += 4) s += `<circle cx="${xx}" cy="${yy}" r=".7" fill="#000" fill-opacity=".42"/>`;
+  s += "</g>";
+  return svgDoc(300, 180, defs, s);
+};
+
+// SFR NB6VAC (Box Plus / Power / Fibre): a low, wide, glossy black box seen from the front, with a column of
+// status lights on the left (green at the bottom) and a ventilation grille on the right.
+const sfrNB6VACSvg = () => {
+  const w = 236;
+  const x = (300 - w) / 2;
+  const yTop = 80;
+  const topH = 20;
+  const frontH = 50;
+  const fy = yTop + topH;
+  const bottom = fy + frontH;
+  const defs = grad("nb6t", [[0, "#242427"], [0.5, "#131315"], [1, "#0c0c0e"]], 1, 0) + grad("nb6f", [[0, "#1b1b1e"], [1, "#0c0c0e"]]);
+  let s = `<ellipse cx="150" cy="${bottom + 8}" rx="${Math.round(w * 0.5)}" ry="8" opacity=".32"/>`;
+  // Glossy top face with a diagonal sheen.
+  const topShape = `M${x + 14} ${yTop} H${x + w - 10} L${x + w} ${fy} H${x} Z`;
+  s += `<path d="${topShape}" fill="url(#nb6t)"/>`;
+  s += `<clipPath id="nb6c"><path d="${topShape}"/></clipPath><path clip-path="url(#nb6c)" d="M${x + 40} ${yTop} L${x + 128} ${yTop} L${x + 66} ${fy} L${x - 8} ${fy} Z" fill="#ffffff" opacity=".07"/>`;
+  // Front face.
+  s += `<rect x="${x}" y="${fy}" width="${w}" height="${frontH}" rx="4" fill="url(#nb6f)"/>`;
+  // Status light column (green at the bottom).
+  for (let i = 0; i < 5; i++) s += `<circle cx="${x + 12}" cy="${fy + 10 + i * 8}" r="2" fill="${i === 4 ? "#36c24a" : "#54545a"}"/>`;
+  // Ventilation grille on the right.
+  for (let i = 0; i < 9; i++) s += `<rect x="${x + w - 62 + i * 6}" y="${fy + 9}" width="2" height="${frontH - 18}" rx="1" fill="#000" fill-opacity=".45"/>`;
+  // Small front flap.
+  s += `<rect x="${Math.round(x + w * 0.52)}" y="${fy + 11}" width="16" height="${frontH - 22}" rx="2" fill="#141417" stroke="#000" stroke-opacity=".3"/>`;
+  return svgDoc(300, 170, defs, s);
+};
+
 const svgUri = (svg) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
-// Pictures of the box models, by model id (Freebox and Livebox).
+// Pictures of the box models, by model id (Freebox, Livebox, SFR).
 const IMG_BOX = {
   ultra: svgUri(ultraSvg()),
   pop: svgUri(popSvg()),
@@ -274,6 +347,9 @@ const IMG_BOX = {
   livebox_6: svgUri(livebox6Svg()),
   livebox_7: svgUri(livebox7Svg()),
   livebox_s: svgUri(liveboxSSvg()),
+  sfr_box_8: svgUri(sfrBox8Svg()),
+  sfr_box_7: svgUri(sfrBox7Svg()),
+  sfr_nb6vac: svgUri(sfrNB6VACSvg()),
 };
 const IMG_LOGO = "__IMG_LOGO__";
 const FREE_URL = "https://www.free.fr";
@@ -458,7 +534,12 @@ const OPERATORS = {
   },
   sfr_box: {
     platform: "sfr_box", name: "SFR Box", color: "#e2001a", logo: null,
-    website: "https://www.sfr.fr", admin: "http://192.168.1.1", models: [],
+    website: "https://www.sfr.fr", admin: "http://192.168.1.1",
+    models: [
+      { id: "sfr_box_8", name: "SFR Box 8", re: /box\s*8|nb8|fast\s*5[0-9]/i },
+      { id: "sfr_box_7", name: "SFR Box 7", re: /box\s*7|nb7/i },
+      { id: "sfr_nb6vac", name: "SFR Box", re: /nb6vac|box\s*(plus|power|fibre|thd)/i },
+    ],
     // The reboot button has no translation key but device_class "restart" (matched below too).
     keys: { rate_down: "dsl_rate_down", rate_up: "dsl_rate_up", reboot: "system_reboot" },
   },
