@@ -1,10 +1,10 @@
 /*
- * Freebox Card for Home Assistant
- * https://github.com/juju35/ha-freebox-card
+ * Internet Box Card for Home Assistant
+ * https://github.com/juju35/ha-internet-box-card
  *
- * Lovelace cards for the Freebox integration (https://www.home-assistant.io/integrations/freebox/).
- * Entities are discovered automatically from the entity registry (platform "freebox" and
- * translation key), whatever the language and the entity ids.
+ * Lovelace cards for internet boxes: the Freebox, Livebox (Orange), SFR Box and Bbox (Bouygues) integrations.
+ * Entities are discovered automatically from the entity registry (integration platform and translation key),
+ * whatever the language and the entity ids; the legacy Bbox integration is found by entity id.
  */
 
 const VERSION = "__VERSION__";
@@ -473,8 +473,8 @@ const STRINGS = {
     on: "On",
     off: "Off",
     mark_read: "Mark calls as read",
-    restart: "Restart the Freebox",
-    restart_confirm: "Restart the Freebox now? The internet, phone and TV connection will be interrupted for a few minutes.",
+    restart: "Restart the box",
+    restart_confirm: "Restart the box now? The internet, phone and TV connection will be interrupted for a few minutes.",
     restart_btn: "Restart",
     cancel: "Cancel",
     calls: "Calls",
@@ -490,24 +490,24 @@ const STRINGS = {
     days: "d",
     minutes: "min",
     no_box: "No internet box found. Is a supported integration (Freebox, Livebox, SFR Box, Bbox) installed?",
-    unknown_box: "Freebox not found",
+    unknown_box: "Internet box not found",
     zoom_in: "Show the full card",
     zoom_out: "Back to the compact view",
     // Editor
-    box: "Freebox (Freebox integration device)",
-    title: "Title (optional, defaults to the Freebox model)",
-    model: "Freebox model (picture and default title)",
+    box: "Internet box (integration device)",
+    title: "Title (optional, defaults to the box model)",
+    model: "Box model (picture and default title)",
     model_auto: "Automatic",
-    show_image: "Show Freebox picture",
-    admin: "Open Freebox OS",
-    admin_url: "Freebox OS address (optional, opened when clicking the picture)",
-    show_logo: "Show Free logo",
+    show_image: "Show the box picture",
+    admin: "Open the box admin interface",
+    admin_url: "Box admin address (optional, opened when clicking the picture)",
+    show_logo: "Show the operator logo",
     show_network: "Show network",
     show_system: "Show system (temperatures, fans)",
     show_storage: "Show storage",
     show_services: "Show services (Wi-Fi, calls, devices)",
     zoom: "Detail button",
-    zoom_helper: "Button at the top right that shows the full Freebox card in place of the mini card, and back",
+    zoom_helper: "Button at the top right that shows the full card in place of the mini card, and back",
     rate_unit: "Rate unit",
     unit_bytes: "Bytes (kB/s, MB/s)",
     unit_bits: "Bits (kb/s, Mb/s)",
@@ -530,8 +530,8 @@ const STRINGS = {
     on: "Activé",
     off: "Désactivé",
     mark_read: "Marquer les appels comme lus",
-    restart: "Redémarrer la Freebox",
-    restart_confirm: "Redémarrer la Freebox maintenant ? La connexion internet, téléphone et TV sera interrompue pendant quelques minutes.",
+    restart: "Redémarrer la box",
+    restart_confirm: "Redémarrer la box maintenant ? La connexion internet, téléphone et TV sera interrompue pendant quelques minutes.",
     restart_btn: "Redémarrer",
     cancel: "Annuler",
     calls: "Appels",
@@ -547,23 +547,23 @@ const STRINGS = {
     days: "j",
     minutes: "min",
     no_box: "Aucune box internet trouvée. Une intégration compatible (Freebox, Livebox, SFR Box, Bbox) est-elle installée ?",
-    unknown_box: "Freebox introuvable",
+    unknown_box: "Box internet introuvable",
     zoom_in: "Afficher la carte complète",
     zoom_out: "Revenir à la vue compacte",
-    box: "Freebox (appareil de l'intégration Freebox)",
-    title: "Titre (facultatif, modèle de la Freebox par défaut)",
-    model: "Modèle de la Freebox (illustration et titre par défaut)",
+    box: "Box internet (appareil de l'intégration)",
+    title: "Titre (facultatif, modèle de la box par défaut)",
+    model: "Modèle de la box (illustration et titre par défaut)",
     model_auto: "Automatique",
-    show_image: "Afficher la photo de la Freebox",
-    admin: "Ouvrir Freebox OS",
-    admin_url: "Adresse de Freebox OS (facultatif, ouverte au clic sur la photo)",
-    show_logo: "Afficher le logo Free",
+    show_image: "Afficher l'illustration de la box",
+    admin: "Ouvrir l'interface d'administration de la box",
+    admin_url: "Adresse d'administration de la box (facultatif, ouverte au clic sur l'illustration)",
+    show_logo: "Afficher le logo de l'opérateur",
     show_network: "Afficher le réseau",
     show_system: "Afficher le système (températures, ventilateurs)",
     show_storage: "Afficher le stockage",
     show_services: "Afficher les services (Wi-Fi, appels, appareils)",
     zoom: "Bouton détail",
-    zoom_helper: "Bouton en haut à droite qui affiche la carte Freebox complète à la place de la mini carte, et inversement",
+    zoom_helper: "Bouton en haut à droite qui affiche la carte complète à la place de la mini carte, et inversement",
     rate_unit: "Unité des débits",
     unit_bytes: "Octets (ko/s, Mo/s)",
     unit_bits: "Bits (kb/s, Mb/s)",
@@ -1096,7 +1096,7 @@ const DIALOG_STYLE = `
   .modal button.danger:hover { background: color-mix(in srgb, var(--fb-red) 26%, transparent); }
 `;
 
-class FreeboxBase extends HTMLElement {
+class InternetBoxBase extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -1160,7 +1160,7 @@ class FreeboxBase extends HTMLElement {
   _press(entityId) {
     Promise.resolve()
       .then(() => this._hass?.callService("button", "press", { entity_id: entityId }))
-      .catch((err) => console.error("freebox-card: button.press failed", err));
+      .catch((err) => console.error("internet-box-card: button.press failed", err));
   }
 
   // Opens the restart confirmation popup; on confirmation, presses the Freebox reboot button.
@@ -1438,9 +1438,9 @@ const FULL_STYLE = `
   }
 `;
 
-class FreeboxCard extends FreeboxBase {
+class InternetBoxCard extends InternetBoxBase {
   static getConfigElement() {
-    return document.createElement("freebox-card-editor");
+    return document.createElement("internet-box-card-editor");
   }
 
   static getStubConfig(hass) {
@@ -1620,9 +1620,9 @@ const MINI_STYLE = `
 
 // The detail button (top right, `zoom: false` removes it) switches the mini card to the full card, with the
 // same configuration, and back; a click anywhere outside the card (or a dialog opened from it) brings it back too.
-class FreeboxMiniCard extends FreeboxCard {
+class InternetBoxMiniCard extends InternetBoxCard {
   static getConfigElement() {
-    return document.createElement("freebox-mini-card-editor");
+    return document.createElement("internet-box-mini-card-editor");
   }
 
   constructor() {
@@ -1744,7 +1744,7 @@ class FreeboxMiniCard extends FreeboxCard {
 // Visual editors (ha-form)
 // ---------------------------------------------------------------------------
 
-class FreeboxEditorBase extends HTMLElement {
+class InternetBoxEditorBase extends HTMLElement {
   static get toggles() {
     return [];
   }
@@ -1845,13 +1845,13 @@ class FreeboxEditorBase extends HTMLElement {
   }
 }
 
-class FreeboxCardEditor extends FreeboxEditorBase {
+class InternetBoxCardEditor extends InternetBoxEditorBase {
   static get toggles() {
     return ["show_network", "show_system", "show_storage", "show_services"];
   }
 }
 
-class FreeboxMiniCardEditor extends FreeboxEditorBase {
+class InternetBoxMiniCardEditor extends InternetBoxEditorBase {
   static get toggles() {
     return ["show_network", "show_system", "zoom"];
   }
@@ -1864,30 +1864,37 @@ class FreeboxMiniCardEditor extends FreeboxEditorBase {
 const define = (name, cls) => {
   if (!customElements.get(name)) customElements.define(name, cls);
 };
-define("freebox-card", FreeboxCard);
-define("freebox-mini-card", FreeboxMiniCard);
-define("freebox-card-editor", FreeboxCardEditor);
-define("freebox-mini-card-editor", FreeboxMiniCardEditor);
+define("internet-box-card", InternetBoxCard);
+define("internet-box-mini-card", InternetBoxMiniCard);
+// Former types, kept so that existing dashboards keep working: same cards under another name. A custom element class
+// can only be defined once, hence the subclasses.
+for (const [name, base] of [
+  ["freebox-card", InternetBoxCard],
+  ["freebox-mini-card", InternetBoxMiniCard],
+])
+  define(name, class extends base {});
+define("internet-box-card-editor", InternetBoxCardEditor);
+define("internet-box-mini-card-editor", InternetBoxMiniCardEditor);
 
 window.customCards = window.customCards || [];
 for (const card of [
   {
-    type: "freebox-card",
-    name: "Freebox Card",
-    description: "Monitor a Freebox: download / upload, temperatures, fans, storage, Wi-Fi, calls and connected devices.",
+    type: "internet-box-card",
+    name: "Internet Box Card",
+    description: "Monitor an internet box (Freebox, Livebox, SFR Box, Bbox): download / upload, temperatures, fans, storage, Wi-Fi, calls and connected devices.",
   },
   {
-    type: "freebox-mini-card",
-    name: "Freebox Mini Card",
-    description: "Compact Freebox overview: download / upload, connection, temperature, Wi-Fi and uptime, with a button to show the full card.",
+    type: "internet-box-mini-card",
+    name: "Internet Box Mini Card",
+    description: "Compact internet box overview (Freebox, Livebox, SFR Box, Bbox): download / upload, connection, temperature, Wi-Fi and uptime, with a button to show the full card.",
   },
 ]) {
   if (!window.customCards.some((c) => c.type === card.type))
-    window.customCards.push({ ...card, preview: true, documentationURL: "https://github.com/juju35/ha-freebox-card" });
+    window.customCards.push({ ...card, preview: true, documentationURL: "https://github.com/juju35/ha-internet-box-card" });
 }
 
 console.info(
-  `%c FREEBOX-CARD %c v${VERSION} `,
+  `%c INTERNET-BOX-CARD %c v${VERSION} `,
   "color: white; background: #cd1e25; font-weight: 700;",
   "color: #cd1e25; background: white; font-weight: 700;"
 );

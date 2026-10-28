@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.0.0 - 2026-10-28
+
+### Changes
+- **Renamed Internet Box Card**: the cards are now **Internet Box Card** / **Internet Box Mini Card**, types `custom:internet-box-card` / `custom:internet-box-mini-card` (card picker and HACS name too), since they are no longer Freebox-only. The former types `freebox-card` and `freebox-mini-card` stay registered: existing dashboards keep working.
+- The file is now `internet-box-card.js` (`hacs.json`, build, release). Releases still attach a `freebox-card.js` copy for manual installs. **After updating, check that the dashboard resource points to `internet-box-card.js`.**
+- The repository is renamed `ha-internet-box-card` (formerly `ha-freebox-card`, GitHub redirects the former address); links updated.
+- **Operator logos**: the header shows the Free, Orange, SFR and Bouygues Telecom logos (the Free logo is now an SVG), each opening its operator website.
+- **Bbox pictures**: original stylised drawings of the Bbox Fibre, Ultym and Miami, set with the `model` option (`bbox_fibre`, `bbox_ultym`, `bbox_miami`).
+- Editor and dialog texts are operator-neutral ("Restart the box", "Box model"…).
+- README rewritten for every operator (supported integrations, models, upgrade notes).
+
+### Fixes
+- **Bbox discovery**: the Bbox integration registers no device and no unique id, so its sensors are not in the entity registry and the card could not find them. They are now found in the states by their entity-id suffix, and the Bbox is listed in the box selector.
+
+### Maintenance
+- Source `src/internet-box-card.js`, classes `InternetBoxCard` / `InternetBoxMiniCard`, editors `internet-box-card-editor` / `internet-box-mini-card-editor`; the release attaches both files.
+
 ## 1.22.0 - 2026-10-28
 
 ### Changes

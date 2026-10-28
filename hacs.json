@@ -1,7 +1,7 @@
 {
-  "name": "Freebox Card",
+  "name": "Internet Box Card",
   "render_readme": true,
   "content_in_root": false,
-  "filename": "freebox-card.js",
+  "filename": "internet-box-card.js",
   "homeassistant": "2024.8.0"
 }

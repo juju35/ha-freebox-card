@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for the Freebox Card
+about: Suggest an idea for the Internet Box Card
 title: "[Feature] "
 labels: enhancement
 assignees: ""

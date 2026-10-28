@@ -1,50 +1,63 @@
-# ha-freebox-card
+# ha-internet-box-card
 
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![HACS Validation](https://github.com/juju35/ha-freebox-card/actions/workflows/hacs.yml/badge.svg)](https://github.com/juju35/ha-freebox-card/actions/workflows/hacs.yml)
-[![Validate](https://github.com/juju35/ha-freebox-card/actions/workflows/validate.yml/badge.svg)](https://github.com/juju35/ha-freebox-card/actions/workflows/validate.yml)
-[![Release](https://img.shields.io/github/v/release/juju35/ha-freebox-card)](https://github.com/juju35/ha-freebox-card/releases/latest)
+[![HACS Validation](https://github.com/juju35/ha-internet-box-card/actions/workflows/hacs.yml/badge.svg)](https://github.com/juju35/ha-internet-box-card/actions/workflows/hacs.yml)
+[![Validate](https://github.com/juju35/ha-internet-box-card/actions/workflows/validate.yml/badge.svg)](https://github.com/juju35/ha-internet-box-card/actions/workflows/validate.yml)
+[![Release](https://img.shields.io/github/v/release/juju35/ha-internet-box-card)](https://github.com/juju35/ha-internet-box-card/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-<p align="center"><img src="images/free.png" alt="Free" width="160"></p>
+<p align="center">
+  <img src="images/free.svg" alt="Free" height="48">&nbsp;&nbsp;&nbsp;
+  <img src="images/orange.svg" alt="Orange" height="48">&nbsp;&nbsp;&nbsp;
+  <img src="images/sfr.svg" alt="SFR" height="48">&nbsp;&nbsp;&nbsp;
+  <img src="images/bbox.svg" alt="Bouygues Telecom" height="48">
+</p>
 
-Lovelace cards for Home Assistant to monitor an internet box at a glance: download / upload rates, connection, temperatures, fans, storage, Wi-Fi, missed calls and connected devices. Built for the Freebox, with discovery for the Livebox (Orange), SFR Box and Bbox (Bouygues) integrations too — each section shows only what its integration exposes.
+Lovelace cards for Home Assistant to monitor an internet box at a glance: download / upload rates, connection, temperatures, fans, storage, Wi-Fi, missed calls and connected devices. They work with the **Freebox**, **Livebox** (Orange), **SFR Box** and **Bbox** (Bouygues Telecom) integrations; each section shows only what the box's integration exposes.
 
-The cards are built on top of the [Freebox integration](https://www.home-assistant.io/integrations/freebox/) of Home Assistant: entities are **discovered automatically**, you don't have to pick them one by one.
+Entities are **discovered automatically**, you don't have to pick them one by one.
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=juju35&repository=ha-freebox-card&category=plugin)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=juju35&repository=ha-internet-box-card&category=plugin)
 
-| Freebox Card | Freebox Mini Card |
+| Internet Box Card | Internet Box Mini Card |
 |---|---|
-| ![freebox-card](https://raw.githubusercontent.com/juju35/ha-freebox-card/main/screenshots/card.png) | ![freebox-mini-card](https://raw.githubusercontent.com/juju35/ha-freebox-card/main/screenshots/mini-card.png) |
+| ![internet-box-card](https://raw.githubusercontent.com/juju35/ha-internet-box-card/main/screenshots/card.png) | ![internet-box-mini-card](https://raw.githubusercontent.com/juju35/ha-internet-box-card/main/screenshots/mini-card.png) |
 
 ## Features
 
-- Two cards: a full **Freebox Card** and a compact **Freebox Mini Card**
-- Detail button at the top right of the mini card: it shows the full Freebox card in its place (same Freebox and options), and the collapse button, or a click anywhere outside the card, brings the compact view back (`zoom: false` removes it)
-- Automatic discovery of the Freebox integration entities, whatever the language of the entity ids (several Freebox supported)
-- Picture and commercial name of the Freebox model (Ultra, Pop, Delta, Revolution, mini 4K), detected automatically or set with the `model` option, and firmware version
+- Two cards: a full **Internet Box Card** and a compact **Internet Box Mini Card**
+- Detail button at the top right of the mini card: it shows the full card in its place (same box and options), and the collapse button, or a click anywhere outside the card, brings the compact view back (`zoom: false` removes it)
+- Automatic discovery of the box entities, whatever the language of the entity ids (several boxes supported)
+- Operator logo, accent colour, website and admin links follow the detected operator
+- Picture and commercial name of the box model, detected automatically or set with the `model` option, and firmware version
 - Connection status and type (FTTH, xDSL…), public IPv4 (IPv6 on hover) and uptime
 - Download / upload rates, in bytes (kB/s, MB/s) or bits (kb/s, Mb/s)
 - Temperature gauges and fans speed
 - Storage: free space of the disk partitions and RAID status
 - Services: Wi-Fi state, missed calls and connected devices (the mini card footer always shows the missed calls, orange when there are some)
-- A check button next to the missed calls (calls tile, mini card footer) marks them as read (the integration's **Mark calls as read** button), shown only when there are missed calls
-- A restart button at the top right of the full card reboots the Freebox (the integration's **Reboot** button), after a confirmation popup; shown only when the integration exposes it
+- A check button next to the missed calls marks them as read, shown only when there are missed calls and the integration has that button
+- A restart button at the top right of the full card reboots the box, after a confirmation popup; shown only when the integration exposes it
 - Colors turn orange / red when a threshold is crossed (temperatures, disk usage, missed calls)
 - Click any value (except the connected devices count, a total over several trackers) to open its Home Assistant history (more-info dialog)
-- Click the Free logo to open free.fr, and the Freebox picture to open the Freebox OS admin interface
+- Click the operator logo to open its website, and the box picture to open the box admin interface
 - Visual editor in the dashboard UI for both cards (no YAML needed)
 - Light and dark mode, English and French
-- Single file, no external dependency, the Freebox pictures and the Free logo are embedded
+- Single file, no external dependency: the box pictures and operator logos are embedded
+
+## Supported integrations
+
+| Integration | Discovered |
+|---|---|
+| [Freebox](https://www.home-assistant.io/integrations/freebox/) (built in) | Rates, connection, IP, uptime, temperatures, fans, storage, RAID, Wi-Fi, missed calls (mark as read), connected devices, reboot |
+| [Livebox](https://github.com/cyr-ius/hass-livebox-component) (Orange, custom) | Line rates, Wi-Fi, missed calls (clear), reboot |
+| [SFR Box](https://www.home-assistant.io/integrations/sfr_box/) (built in) | DSL line rates, temperature, reboot |
+| [Bbox](https://www.home-assistant.io/integrations/bbox/) (Bouygues, built in, YAML) | Download / upload bandwidth |
 
 ## Prerequisites
 
-Home Assistant 2024.8 or later, and:
+Home Assistant 2024.8 or later, and one of the integrations above configured.
 
-The [Freebox integration](https://www.home-assistant.io/integrations/freebox/) must be configured (it is built into Home Assistant: **Settings → Devices & services → Add integration → Freebox**).
-
-The connected devices count uses the `device_tracker` entities of the integration, which are disabled by default: enable the ones you want to follow.
+The connected devices count uses the `device_tracker` entities of the integration, which are often disabled by default: enable the ones you want to follow.
 
 ## Installation
 
@@ -52,48 +65,52 @@ The connected devices count uses the `device_tracker` entities of the integratio
 
 Click the button below to add the repository directly:
 
-[![Add to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=juju35&repository=ha-freebox-card&category=plugin)
+[![Add to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=juju35&repository=ha-internet-box-card&category=plugin)
 
 Then click **Download**, and reload your browser when HACS asks you to.
 
 Or manually:
 
 1. Open HACS → **⋮** (top right) → **Custom repositories**
-2. Add `https://github.com/juju35/ha-freebox-card` — Type: **Dashboard**
-3. Search for **Freebox Card** and click **Download**
+2. Add `https://github.com/juju35/ha-internet-box-card` — Type: **Dashboard**
+3. Search for **Internet Box Card** and click **Download**
 4. Clear your browser cache and refresh
 
 ### Manual
 
-1. Download `freebox-card.js` from the [latest release](https://github.com/juju35/ha-freebox-card/releases/latest)
-2. Copy it to `/config/www/freebox-card.js`
+1. Download `internet-box-card.js` from the [latest release](https://github.com/juju35/ha-internet-box-card/releases/latest)
+2. Copy it to `/config/www/internet-box-card.js`
 3. Go to **Settings → Dashboards → ⋮ → Resources** → Add resource:
-   - URL: `/local/freebox-card.js`
+   - URL: `/local/internet-box-card.js`
    - Type: **JavaScript Module**
 4. Clear your browser cache and refresh
+
+### Upgrading from Freebox Card
+
+The cards were called **Freebox Card** / **Freebox Mini Card** before version 2.0.0. The former types `custom:freebox-card` and `custom:freebox-mini-card` stay registered, so existing dashboards keep working. After updating, check that the dashboard resource points to `internet-box-card.js` (releases still attach a `freebox-card.js` copy for manual installs).
 
 ## Configuration
 
 ### Visual editor
 
-Edit a dashboard, click **Add card** and search for **Freebox Card** or **Freebox Mini Card**. The Freebox is preselected; pick another one in the list if you have several, set an optional title, choose the sections to display, the rate unit and the language. The preview updates live, and options left at their default are kept out of the generated YAML.
+Edit a dashboard, click **Add card** and search for **Internet Box Card** or **Internet Box Mini Card**. The box is preselected; pick another one in the list if you have several, set an optional title, choose the sections to display, the rate unit and the language. The preview updates live, and options left at their default are kept out of the generated YAML.
 
 ### Minimal
 
 ```yaml
-type: custom:freebox-card
+type: custom:internet-box-card
 ```
 
 ```yaml
-type: custom:freebox-mini-card
+type: custom:internet-box-mini-card
 ```
 
 ### Full options
 
 ```yaml
-type: custom:freebox-card
+type: custom:internet-box-card
 box: 0123456789abcdef0123456789abcdef
-title: My Freebox
+title: My box
 model: delta
 admin_url: https://mafreebox.freebox.fr
 show_image: true
@@ -107,11 +124,11 @@ language: fr
 ```
 
 ```yaml
-type: custom:freebox-mini-card
+type: custom:internet-box-mini-card
 box: 0123456789abcdef0123456789abcdef
-title: My Freebox
-model: delta
-admin_url: https://mafreebox.freebox.fr
+title: My box
+model: livebox_7
+admin_url: http://livebox.home
 show_image: true
 show_logo: true
 show_network: true
@@ -125,12 +142,12 @@ language: fr
 
 | Option | Card | Default | Description |
 |---|---|---|---|
-| `box` | both | First Freebox found | Freebox to display: its device id (only needed with several Freebox, pick it in the visual editor) |
-| `title` | both | Freebox model | Card title |
-| `model` | both | Detected | Box model, for its picture and the default title. Freebox: `ultra`, `pop`, `delta`, `revolution`, `mini_4k`; Livebox, SFR Box and Bbox models in [Supported models](#supported-models). Needed for the Bbox, whose integration exposes no model |
-| `admin_url` | both | `https://mafreebox.freebox.fr` | Freebox OS address opened when clicking the Freebox picture (for example `http://192.168.1.254`) |
-| `show_image` | both | `true` | Show the Freebox picture |
-| `show_logo` | both | `true` | Show the Free logo (opens free.fr when clicked) |
+| `box` | both | First box found | Box to display: its device id, or for the Bbox its entity-id prefix (only needed with several boxes, pick it in the visual editor) |
+| `title` | both | Box model | Card title |
+| `model` | both | Detected | Box model, for its picture and the default title (see [Supported models](#supported-models)). Needed for the Bbox, whose integration exposes no model |
+| `admin_url` | both | Operator default | Admin interface opened when clicking the box picture (Freebox: `https://mafreebox.freebox.fr`, Livebox: `http://livebox.home`, SFR: `http://192.168.1.1`, Bbox: `https://mabbox.bytel.fr`) |
+| `show_image` | both | `true` | Show the box picture |
+| `show_logo` | both | `true` | Show the operator logo (opens the operator website when clicked) |
 | `show_network` | both | `true` | Download / upload rates (and IPv4, uptime on the full card) |
 | `show_system` | both | `true` | Temperatures and fans (hottest temperature on the mini card) |
 | `show_storage` | full | `true` | Disk partitions and RAID status |
@@ -141,14 +158,16 @@ language: fr
 
 ## Supported models
 
-The models supported by the [Freebox integration](https://www.home-assistant.io/integrations/freebox/) (Freebox OS). The model is detected from the Freebox device (model id such as `fbxgw9-r1`); set `model` to force another picture, for example when the detection fails. Without a detected model or `model` option, the card shows the Freebox Ultra picture.
+The model is detected from the box device (model id or name); set `model` to force another picture, for example when the detection fails. The box pictures are original stylised drawings.
+
+### Freebox
+
+Without a detected model or `model` option, a Freebox shows the Freebox Ultra picture.
 
 | Freebox Ultra | Freebox Pop | Freebox Delta | Freebox Revolution | Freebox mini 4K |
 |:---:|:---:|:---:|:---:|:---:|
-| <img src="images/freebox-ultra.svg" alt="Freebox Ultra" width="140"> | <img src="images/freebox-pop.svg" alt="Freebox Pop" width="140"> | <img src="images/freebox-delta.svg" alt="Freebox Delta" width="140"> | <img src="images/freebox-revolution.svg" alt="Freebox Revolution" width="140"> | <img src="images/freebox-mini-4k.svg" alt="Freebox mini 4K" width="140"> |
+| <img src="images/freebox-ultra.svg" alt="Freebox Ultra" width="120"> | <img src="images/freebox-pop.svg" alt="Freebox Pop" width="120"> | <img src="images/freebox-delta.svg" alt="Freebox Delta" width="120"> | <img src="images/freebox-revolution.svg" alt="Freebox Revolution" width="120"> | <img src="images/freebox-mini-4k.svg" alt="Freebox mini 4K" width="120"> |
 | `ultra` (v9) | `pop` (v8) | `delta` (v7) | `revolution` (v6) | `mini_4k` |
-
-The card also discovers the Livebox (Orange), SFR Box and Bbox (Bouygues) integrations. The box pictures below are original stylised silhouettes (no brand logos). The Bbox integration exposes no device model, so set its picture with the `model` option.
 
 ### Livebox (Orange)
 
@@ -164,7 +183,9 @@ The card also discovers the Livebox (Orange), SFR Box and Bbox (Bouygues) integr
 | <img src="images/sfr-box-8.svg" alt="SFR Box 8" width="120"> | <img src="images/sfr-box-7.svg" alt="SFR Box 7" width="120"> | <img src="images/sfr-nb6vac.svg" alt="SFR Box NB6VAC" width="120"> |
 | `sfr_box_8` | `sfr_box_7` | `sfr_nb6vac` |
 
-### Bbox (Bouygues)
+### Bbox (Bouygues Telecom)
+
+The Bbox integration exposes no device model: set the picture with the `model` option.
 
 | Bbox Fibre | Bbox Ultym | Bbox Miami |
 |:---:|:---:|:---:|
@@ -187,9 +208,9 @@ The last row is the mini card after a click on its detail button (top right): th
 
 ## How it works
 
-The cards read the entity and device registries of Home Assistant and keep the entities of the supported box integrations (`freebox`, `livebox`, `sfr_box`, `bbox`). Each box's sensors are recognized by their integration's own translation keys (for the Freebox: `rate_down`, `rate_up`, `missed`, `wifi`, `partition_free_space`, `raid_degraded`), so entity ids translated in another language (for example `sensor.freebox_vitesse_de_telechargement`) and renamed entities are supported; the Bbox, whose integration uses no translation keys, is matched by entity-id instead. The box picture and the header name, colour and links follow the detected operator.
+The cards read the entity and device registries of Home Assistant and keep the entities of the supported box integrations (`freebox`, `livebox`, `sfr_box`, `bbox`). Each box's sensors are recognized by their integration's own translation keys (for the Freebox: `rate_down`, `rate_up`, `missed`, `wifi`, `partition_free_space`, `raid_degraded`), so entity ids translated in another language (for example `sensor.freebox_vitesse_de_telechargement`) and renamed entities are supported. The Bbox integration is a legacy YAML platform without devices nor unique ids, so its sensors are not in the entity registry: they are found in the states by their entity-id suffix (`_currently_used_download_bandwidth`…). The box picture and the header logo, colour and links follow the detected operator.
 
-The Freebox itself is the device of the download speed sensor. Temperature and fan sensors, named by the Freebox, are recognized by their `temperature` device class and `rpm` unit, disk partitions by their parent device, and connected devices by the config entry they share with the Freebox (with a single Freebox, the connected devices trackers that have no device, the default of the integration, are counted too). The **Mark calls as read** and **Reboot** buttons are found by their translation key (the reboot button also by its `restart` device class). The connection type, IP addresses and uptime come from the attributes of the Freebox `device_tracker`. The integration gives the boot date without a time zone, in the system time zone of the Home Assistant process, and the card reads it in the time zone of Home Assistant (**Settings → System → General**). Both match on Home Assistant OS and Supervised; in a Docker container, start Home Assistant with `TZ` set to the same time zone (for example `-e TZ=Europe/Paris`), otherwise the uptime is off by the UTC offset. When the registry is not available, English entity ids (`sensor.freebox_download_speed`…) are used as a fallback.
+The box itself is the device of the download rate sensor. Temperature and fan sensors are recognized by their `temperature` device class and `rpm` unit, disk partitions by their parent device, and connected devices by the config entry they share with the box (with a single box, the connected devices trackers that have no device are counted too). The **mark calls as read** and **reboot** buttons are found by their translation key (the reboot button also by its `restart` device class). On a Freebox, the connection type, IP addresses and uptime come from the attributes of its `device_tracker`. The Freebox integration gives the boot date without a time zone, in the system time zone of the Home Assistant process, and the card reads it in the time zone of Home Assistant (**Settings → System → General**). Both match on Home Assistant OS and Supervised; in a Docker container, start Home Assistant with `TZ` set to the same time zone (for example `-e TZ=Europe/Paris`), otherwise the uptime is off by the UTC offset. When the registry is not available, English Freebox entity ids (`sensor.freebox_download_speed`…) are used as a fallback.
 
 Thresholds:
 
@@ -203,7 +224,7 @@ Thresholds:
 
 ```bash
 npm install
-npm run build        # bundles src/freebox-card.js + the embedded logos (images/free.svg…) into dist/freebox-card.js
+npm run build        # bundles src/internet-box-card.js + the embedded logos (images/*.svg) into dist/internet-box-card.js
 npm run check        # builds and checks the card (run in CI)
 npm run screenshots  # renders the cards with mock data (scripts/mock-states.mjs) into screenshots/ (and fan.gif, needs ffmpeg)
 ```
@@ -214,7 +235,7 @@ npm run screenshots  # renders the cards with mock data (scripts/mock-states.mjs
 
 1. Bump `version` in `package.json`
 2. Add a `## <version>` section at the top of [CHANGELOG.md](CHANGELOG.md)
-3. Push to `main`: the **Release** workflow builds the card, creates the tag and the GitHub release with the changelog section as notes, and attaches `freebox-card.js`
+3. Push to `main`: the **Release** workflow builds the card, creates the tag and the GitHub release with the changelog section as notes, and attaches `internet-box-card.js` (and its `freebox-card.js` copy)
 
 ## Translations
 
@@ -231,4 +252,4 @@ Contributions for additional languages are welcome!
 
 [MIT](LICENSE)
 
-Free and Freebox are trademarks of Free SAS. This project is not affiliated with Free.
+Freebox and Free are trademarks of Free SAS, Livebox and Orange of Orange SA, SFR of SFR SA, Bbox and Bouygues Telecom of Bouygues Telecom SA. This project is not affiliated with any of them.
