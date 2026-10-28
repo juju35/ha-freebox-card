@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { load } from "./load.mjs";
 
-const { discover, parseDate, uptimeSec, FreeboxCard, sameSig } = load("freebox-card.js", [
+const { discover, listBoxes, parseDate, uptimeSec, FreeboxCard, sameSig } = load("freebox-card.js", [
   "discover",
+  "listBoxes",
   "parseDate",
   "uptimeSec",
   "FreeboxCard",
@@ -153,6 +154,20 @@ test("boxes of other operators are discovered from their own entity keys", () =>
   assert.equal(bb.operator.name, "Bbox");
   assert.equal(bb.scalars.rate_down, "sensor.bbox_currently_used_download_bandwidth");
   assert.equal(bb.scalars.rate_up, "sensor.bbox_currently_used_upload_bandwidth");
+
+  // Bbox for real: the legacy integration registers no device and no unique_id, so its sensors are only in
+  // hass.states (not the entity registry). It is discovered and listed from states by the entity-id prefix.
+  const bbOnly = { states: bbStates, entities: {}, devices: {} };
+  assert.deepEqual(
+    [...listBoxes(bbOnly)].map((b) => ({ value: b.value, label: b.label })),
+    [{ value: "sensor.bbox", label: "Bbox" }]
+  );
+  const bb2 = discover(bbOnly);
+  assert.equal(bb2.operator.name, "Bbox");
+  assert.equal(bb2.id, "sensor.bbox");
+  assert.equal(bb2.device, null);
+  assert.equal(bb2.scalars.rate_down, "sensor.bbox_currently_used_download_bandwidth");
+  assert.equal(bb2.scalars.rate_up, "sensor.bbox_currently_used_upload_bandwidth");
 });
 
 test("the reboot button is discovered by its translation key, its device class, or the default entity id", () => {
