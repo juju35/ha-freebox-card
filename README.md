@@ -41,7 +41,7 @@ Entities are **discovered automatically**, you don't have to pick them one by on
 - Click any value (except the connected devices count, a total over several trackers) to open its Home Assistant history (more-info dialog)
 - Click the operator logo to open its website, and the box picture to open the box admin interface
 - Visual editor in the dashboard UI for both cards (no YAML needed)
-- Light and dark mode, English and French
+- Light and dark mode, English, French, German and Spanish
 - Single file, no external dependency: the box pictures and operator logos are embedded
 
 ## Supported integrations
@@ -156,7 +156,7 @@ language: fr
 | `show_services` | full | `true` | Wi-Fi, missed calls and connected devices |
 | `zoom` | mini | `true` | Detail button at the top right: shows the full card (every section) in place of the mini card, and back |
 | `rate_unit` | both | `bytes` | Rates unit: `bytes` (kB/s, MB/s) or `bits` (kb/s, Mb/s) |
-| `language` | both | Auto | Force language: `fr` or `en` (auto-detects from HA settings) |
+| `language` | both | Auto | Force language: `en`, `fr`, `de` or `es` (auto-detects from HA settings) |
 
 ## Supported models
 
@@ -259,6 +259,8 @@ The cards auto-detect the language from your Home Assistant settings. Currently 
 |---|---|
 | English | `en` |
 | Français | `fr` |
+| Deutsch | `de` |
+| Español | `es` |
 
 Contributions for additional languages are welcome!
 
