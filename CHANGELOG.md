@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.21.0 - 2026-10-28
+
+### Fixes
+- **Realistic Livebox pictures**: redrawn to match each model — the Livebox 6 and 7 are now dark anthracite upright boxes with a flat top, a fabric-effect finish, an orange status light line (the 7 adds a white dot) and a front screen; the Livebox 4 is a dark box with a rounded top and a front display; the Livebox 5 a light upright box; the Livebox S a small light box.
+
 ## 1.20.0 - 2026-10-28
 
 ### Changes

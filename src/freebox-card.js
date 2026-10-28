@@ -130,48 +130,81 @@ const revolutionSvg = () => {
   s += `<rect x="6" y="26" width="20" height="13" rx="1.5" fill="#d61f1f"/><rect x="9" y="29" width="8" height="4" fill="#fff"/></g>`;
   return svgDoc(320, 136, defs, s);
 };
-// Orange Livebox: original stylised silhouettes of the box form factors (no logo), with the brand orange used
-// only as a small accent. The recent boxes are white upright towers (drawn head-on, soft cylindrical gradient,
-// floor shadow), the Livebox 4 a flat dark slab, the Livebox S a small white box.
+// Orange Livebox: original stylised drawings of each model's form factor (no logo), with the brand orange used
+// only as an accent. The Livebox 6 and 7 are dark anthracite upright boxes with a flat top, a fabric-effect
+// finish, an orange status light line (the 7 adds a white dot) and a small front screen; the Livebox 5 is a
+// light upright rounded box; the Livebox 4 a dark box with a rounded top and a front display; the Livebox S a
+// small light box.
 const LB = "#ff7900";
-const liveboxTower = ({ w, h, r, accentY = 0, led = false }) => {
+// Dark upright box with a flat top (Livebox 6 / 7). `diode` adds the white dot under the orange status line.
+const liveboxDark = ({ w, h, diode }) => {
   const x = (300 - w) / 2;
   const bottom = 172;
   const top = bottom - h;
-  const defs = grad("lb-body", [[0, "#fdfdfd"], [0.5, "#f1f1ef"], [1, "#d6d6d3"]], 1, 0);
-  let s = `<ellipse cx="150" cy="${bottom + 3}" rx="${(w * 0.52).toFixed(0)}" ry="6" opacity=".22"/>`;
-  s += `<path d="M${x} ${top + r} Q${x} ${top} ${x + r} ${top} H${x + w - r} Q${x + w} ${top} ${x + w} ${top + r} V${bottom - 10} Q${x + w} ${bottom} ${x + w - 10} ${bottom} H${x + 10} Q${x} ${bottom} ${x} ${bottom - 10} Z" fill="url(#lb-body)"/>`;
-  s += `<rect x="${x + 7}" y="${top + r + 6}" width="5" height="${h - r - 24}" rx="2.5" fill="#ffffff" opacity=".65"/>`;
-  if (accentY) s += `<rect x="${x}" y="${top + accentY}" width="${w}" height="3.5" fill="${LB}" opacity=".9"/>`;
-  if (led) s += `<circle cx="150" cy="${bottom - 14}" r="2.6" fill="${LB}"/><circle cx="150" cy="${bottom - 14}" r="5" fill="${LB}" opacity=".3"/>`;
+  const r = 14;
+  const defs =
+    grad("lbd", [[0, "#53555a"], [0.5, "#333539"], [1, "#1b1c1f"]], 1, 0) +
+    '<filter id="lbd-g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4"/></filter>';
+  let s = `<ellipse cx="150" cy="${bottom + 3}" rx="${Math.round(w * 0.5)}" ry="6" opacity=".3"/>`;
+  s += `<rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}" fill="url(#lbd)"/>`;
+  // Fabric-effect: faint vertical lines.
+  for (let i = 1; i < 12; i++)
+    s += `<line x1="${(x + (i * w) / 12).toFixed(1)}" y1="${top + 8}" x2="${(x + (i * w) / 12).toFixed(1)}" y2="${bottom - 8}" stroke="#000" stroke-opacity=".07"/>`;
+  s += `<rect x="${x + 6}" y="${top + 12}" width="4" height="${h - 28}" rx="2" fill="#fff" opacity=".10"/>`;
+  // Orange status light line near the top, with a soft glow.
+  const ly = top + 22;
+  s += `<rect x="${x + 16}" y="${ly - 2}" width="${w - 32}" height="7" rx="3.5" fill="${LB}" opacity=".5" filter="url(#lbd-g)"/>`;
+  s += `<rect x="${x + 16}" y="${ly}" width="${w - 32}" height="3" rx="1.5" fill="${LB}"/>`;
+  if (diode) s += `<circle cx="150" cy="${ly + 11}" r="1.8" fill="#fff"/>`;
+  // Small front e-ink screen.
+  s += `<rect x="${(300 - 44) / 2}" y="${bottom - 14 - 26}" width="44" height="26" rx="4" fill="#111214" stroke="#000" stroke-opacity=".35"/>`;
   return svgDoc(300, 182, defs, s);
 };
-const livebox5Svg = () => liveboxTower({ w: 92, h: 92, r: 18, led: true });
-const livebox6Svg = () => liveboxTower({ w: 98, h: 120, r: 46 });
-const livebox7Svg = () => liveboxTower({ w: 96, h: 126, r: 16, accentY: 14 });
-const livebox4Svg = () => {
-  const w = 240;
-  const h = 54;
+const livebox6Svg = () => liveboxDark({ w: 94, h: 116, diode: false });
+const livebox7Svg = () => liveboxDark({ w: 102, h: 128, diode: true });
+// Light upright rounded box (Livebox 5).
+const livebox5Svg = () => {
+  const w = 86;
+  const h = 104;
   const x = (300 - w) / 2;
-  const y = 96;
-  const defs = grad("lb4-f", [[0, "#2b2b2e"], [1, "#161618"]]) + grad("lb4-t", [[0, "#3a3a3d"], [1, "#2a2a2d"]], 1, 0);
-  let s = `<ellipse cx="150" cy="${y + h + 16}" rx="${(w * 0.52).toFixed(0)}" ry="7" opacity=".3"/>`;
-  s += `<path d="M${x + 14} ${y} H${x + w} L${x + w - 14} ${y + 14} H${x} Z" fill="url(#lb4-t)"/>`;
-  s += `<rect x="${x}" y="${y + 14}" width="${w}" height="${h}" rx="5" fill="url(#lb4-f)"/>`;
-  s += `<rect x="${x + 16}" y="${y + h}" width="${w - 32}" height="3" rx="1.5" fill="#4a4a4e"/>`;
-  s += `<circle cx="${x + w - 24}" cy="${y + 30}" r="3" fill="${LB}"/>`;
+  const bottom = 172;
+  const top = bottom - h;
+  const r = 22;
+  const defs = grad("lb5", [[0, "#ffffff"], [0.5, "#f1f1ef"], [1, "#d8d8d5"]], 1, 0);
+  let s = `<ellipse cx="150" cy="${bottom + 3}" rx="${Math.round(w * 0.5)}" ry="6" opacity=".22"/>`;
+  s += `<rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}" fill="url(#lb5)"/>`;
+  s += `<rect x="${x + 7}" y="${top + r}" width="5" height="${h - r - 18}" rx="2.5" fill="#fff" opacity=".6"/>`;
+  s += `<circle cx="150" cy="${bottom - 12}" r="2.4" fill="${LB}"/><circle cx="150" cy="${bottom - 12}" r="4.5" fill="${LB}" opacity=".3"/>`;
+  return svgDoc(300, 182, defs, s);
+};
+// Dark box with a rounded top and a front display (Livebox 4).
+const livebox4Svg = () => {
+  const w = 150;
+  const h = 84;
+  const x = (300 - w) / 2;
+  const bottom = 168;
+  const top = bottom - h;
+  const defs = grad("lb4", [[0, "#35363a"], [0.5, "#232428"], [1, "#141518"]], 1, 0);
+  let s = `<ellipse cx="150" cy="${bottom + 4}" rx="${Math.round(w * 0.52)}" ry="7" opacity=".3"/>`;
+  s += `<path d="M${x} ${top + 40} Q${x} ${top} ${x + w / 2} ${top} Q${x + w} ${top} ${x + w} ${top + 40} V${bottom - 8} Q${x + w} ${bottom} ${x + w - 8} ${bottom} H${x + 8} Q${x} ${bottom} ${x} ${bottom - 8} Z" fill="url(#lb4)"/>`;
+  s += `<path d="M${x + 16} ${top + 32} Q${x + 18} ${top + 8} ${x + w / 2} ${top + 6} Q${x + w - 32} ${top + 8} ${x + w - 16} ${top + 30}" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="6" stroke-linecap="round"/>`;
+  s += `<rect x="${x + 22}" y="${bottom - 30}" width="${w - 44}" height="16" rx="3" fill="#0e0f11"/>`;
+  s += `<circle cx="${x + w - 20}" cy="${bottom - 22}" r="2.2" fill="${LB}"/>`;
   return svgDoc(300, 180, defs, s);
 };
+// Small light box (Livebox S).
 const liveboxSSvg = () => {
-  const w = 128;
-  const h = 60;
+  const w = 96;
+  const h = 74;
   const x = (300 - w) / 2;
-  const y = 94;
-  const defs = grad("lbs-f", [[0, "#ffffff"], [1, "#e4e4e2"]]) + grad("lbs-t", [[0, "#ffffff"], [1, "#efefed"]], 1, 0);
-  let s = `<ellipse cx="150" cy="${y + h + 14}" rx="${(w * 0.5).toFixed(0)}" ry="6" opacity=".22"/>`;
-  s += `<path d="M${x + 16} ${y} H${x + w} L${x + w - 16} ${y + 16} H${x} Z" fill="url(#lbs-t)"/>`;
-  s += `<rect x="${x}" y="${y + 16}" width="${w}" height="${h}" rx="8" fill="url(#lbs-f)"/>`;
-  s += `<circle cx="${x + 22}" cy="${y + 16 + h / 2}" r="2.4" fill="${LB}"/>`;
+  const bottom = 166;
+  const top = bottom - h;
+  const r = 16;
+  const defs = grad("lbs", [[0, "#ffffff"], [0.5, "#f0f0ee"], [1, "#dcdcd9"]], 1, 0);
+  let s = `<ellipse cx="150" cy="${bottom + 4}" rx="${Math.round(w * 0.5)}" ry="6" opacity=".2"/>`;
+  s += `<rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}" fill="url(#lbs)"/>`;
+  s += `<rect x="${x + 6}" y="${top + r}" width="4" height="${h - r - 14}" rx="2" fill="#fff" opacity=".6"/>`;
+  s += `<circle cx="150" cy="${bottom - 12}" r="2.2" fill="${LB}"/>`;
   return svgDoc(300, 180, defs, s);
 };
 
