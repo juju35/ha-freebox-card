@@ -690,13 +690,21 @@ const fmtUptime = (sec, hass, config) => {
   return `${m} ${t(hass, config, "minutes")}`;
 };
 
-/** Offset of a time zone from UTC at a given instant, in minutes ("Europe/Paris" in summer -> 120). */
+/** Offset of a time zone from UTC at a given instant, in minutes ("Europe/Paris" in summer -> 120).
+ *  Cached per (time zone, minute): building an Intl.DateTimeFormat on every render is needless work. */
+const _tzCache = new Map();
 const tzOffset = (timeZone, ms) => {
+  const key = `${timeZone}|${Math.floor(ms / 60000)}`;
+  let off = _tzCache.get(key);
+  if (off !== undefined) return off;
   const name = new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "longOffset" })
     .formatToParts(new Date(ms))
     .find((p) => p.type === "timeZoneName")?.value;
   const m = /GMT([+-])(\d{1,2})(?::?(\d{2}))?/.exec(name || "");
-  return m ? (m[1] === "-" ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] || 0)) : 0;
+  off = m ? (m[1] === "-" ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] || 0)) : 0;
+  if (_tzCache.size > 64) _tzCache.clear();
+  _tzCache.set(key, off);
+  return off;
 };
 
 /**
@@ -825,6 +833,7 @@ const tail = (hass, id) => {
 };
 
 /** Registry entries of every supported operator, or [] when the registry is not exposed. */
+let _withState; // last registry() result, keyed by the identity of hass.entities and hass.states
 const registry = (hass) => {
   if (!hass.entities) return [];
   // The scan of the whole registry is cached on hass.entities, replaced only when the registry changes.
@@ -833,7 +842,12 @@ const registry = (hass) => {
     all = Object.values(hass.entities).filter((e) => OPERATORS[e.platform] && !e.hidden);
     _entries.set(hass.entities, all);
   }
-  return all.filter((e) => hass.states[e.entity_id]);
+  // registry() is called several times per discover() pass (listBoxes, legacyBoxes, opOfDevice):
+  // reuse the filtered list while hass.entities and hass.states are the same objects.
+  if (_withState && _withState.entities === hass.entities && _withState.states === hass.states) return _withState.list;
+  const list = all.filter((e) => hass.states[e.entity_id]);
+  _withState = { entities: hass.entities, states: hass.states, list };
+  return list;
 };
 
 /** True when an entity is the operator's "download rate" sensor (by translation key, or entity id for a legacy one). */
@@ -846,14 +860,23 @@ const opOfDevice = (hass, deviceId) => {
   return undefined;
 };
 
-/** Entity ids in hass.states that match a legacy operator's download / upload patterns (Bbox has no registry). */
+/** Entity ids in hass.states that match a legacy operator's download / upload patterns (Bbox has no registry).
+ *  The result depends only on the set of entity ids, not on the states, but hass.states is replaced on every
+ *  state change: the regex scan of all ids is cached and reused while the set of ids looks unchanged (same
+ *  count and every cached match still present — entity additions and removals change the count). */
+let _legacyIds; // { count, ids (sorted) }
 const legacyStateIds = (hass) => {
+  const states = hass.states || {};
+  const keys = Object.keys(states);
+  const hit = _legacyIds;
+  if (hit && hit.count === keys.length && hit.ids.every((id) => id in states)) return hit.ids;
   const out = [];
   for (const op of Object.values(OPERATORS)) {
     if (!op.legacy) continue;
-    for (const id of Object.keys(hass.states || {}))
-      if (op.legacy.rate_down?.test(id) || op.legacy.rate_up?.test(id)) out.push(id);
+    for (const id of keys) if (op.legacy.rate_down?.test(id) || op.legacy.rate_up?.test(id)) out.push(id);
   }
+  out.sort();
+  _legacyIds = { count: keys.length, ids: out };
   return out;
 };
 
@@ -919,7 +942,7 @@ const discover = (hass, boxId) => {
     _cache.set(holder, byBox);
   }
   const key = boxId || "";
-  const stamp = found.map((e) => e.entity_id).join(",") + "|" + legacyStateIds(hass).sort().join(",");
+  const stamp = found.map((e) => e.entity_id).join(",") + "|" + legacyStateIds(hass).join(",");
   const hit = byBox.get(key);
   if (hit && hit.devices === hass.devices && hit.stamp === stamp) return hit.box;
 
