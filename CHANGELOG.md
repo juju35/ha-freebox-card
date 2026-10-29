@@ -8,7 +8,7 @@
 - **Translations**: fan speeds in the user's language (tr/min, U/min), translated fallback name for disks, "espacio libre" removed from Spanish partition names, uptime label written the same way in every language ("Uptime 3 d 4 h"), German "Tg." for days, Spanish "En línea / Fuera de línea".
 
 ### Maintenance
-- CI: fork-safe screenshots workflow checkout, Chromium system dependencies installed in a time-boxed, retried step that fails explicitly after 3 attempts, Dependabot also tracks npm (Playwright).
+- CI: fork-safe screenshots workflow checkout, Chromium system dependencies installed in a time-boxed, retried step that fails explicitly after 3 attempts, Dependabot also tracks npm (Playwright), and the Lint, Validate and HACS checks are re-run on the commit pushed by the screenshots workflow.
 - Internal clean-ups: shared rate tile, no in-place sort of a cached list, unused generic brand icon removed.
 
 ## 2.1.0 - 2026-10-28
