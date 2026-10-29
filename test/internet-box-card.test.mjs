@@ -307,3 +307,44 @@ test("the editor clears a model of another operator when the box changes, and ke
   change({ ...ed._config, model: "livebox_6" });
   assert.equal(emitted.at(-1).model, "livebox_6");
 });
+
+test("two legacy Bbox whose prefixes overlap keep their own rates and distinct editor labels", () => {
+  const st = (state) => ({ state, attributes: {} });
+  // `name: Bbox` and `name: Bbox Salon`: "sensor.bbox" is the start of "sensor.bbox_salon".
+  const states = {
+    "sensor.bbox_currently_used_download_bandwidth": st("500"),
+    "sensor.bbox_currently_used_upload_bandwidth": st("50"),
+    "sensor.bbox_salon_currently_used_download_bandwidth": st("900"),
+    "sensor.bbox_salon_currently_used_upload_bandwidth": st("90"),
+  };
+  const hass = { states, entities: {}, devices: {} };
+  const main = discover(hass, "sensor.bbox");
+  assert.equal(main.id, "sensor.bbox");
+  assert.equal(main.scalars.rate_down, "sensor.bbox_currently_used_download_bandwidth");
+  assert.equal(main.scalars.rate_up, "sensor.bbox_currently_used_upload_bandwidth");
+  const salon = discover(hass, "sensor.bbox_salon");
+  assert.equal(salon.id, "sensor.bbox_salon");
+  assert.equal(salon.scalars.rate_down, "sensor.bbox_salon_currently_used_download_bandwidth");
+  assert.equal(salon.scalars.rate_up, "sensor.bbox_salon_currently_used_upload_bandwidth");
+  const labels = [...listBoxes(hass)].map((b) => b.label);
+  assert.equal(new Set(labels).size, 2, `labels must be distinct: ${labels.join(", ")}`);
+});
+
+test("a legacy Bbox missing its upload sensor does not borrow another box's upload rate", () => {
+  const st = (state) => ({ state, attributes: {} });
+  const hass = {
+    states: {
+      "sensor.bbox_currently_used_download_bandwidth": st("500"),
+      "sensor.bbox_salon_currently_used_download_bandwidth": st("unavailable"),
+      "sensor.bbox_salon_currently_used_upload_bandwidth": st("unavailable"),
+    },
+    entities: {},
+    devices: {},
+  };
+  const main = discover(hass, "sensor.bbox");
+  assert.equal(main.scalars.rate_down, "sensor.bbox_currently_used_download_bandwidth");
+  assert.equal(main.scalars.rate_up, undefined);
+  // A single legacy box keeps its plain operator name as label.
+  const one = { states: { "sensor.bbox_currently_used_download_bandwidth": st("1") }, entities: {}, devices: {} };
+  assert.deepEqual([...listBoxes(one)].map((b) => b.label), ["Bbox"]);
+});
