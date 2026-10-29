@@ -49,7 +49,7 @@ Entities are **discovered automatically**, you don't have to pick them one by on
 | Integration | Discovered |
 |---|---|
 | [Freebox](https://www.home-assistant.io/integrations/freebox/) (built in) | Rates, connection, IP, uptime, temperatures, fans, storage, RAID, Wi-Fi, missed calls (mark as read), connected devices, reboot |
-| [Livebox](https://github.com/cyr-ius/hass-livebox-component) (Orange, custom) | Line rates, Wi-Fi, missed calls (clear), reboot |
+| [Livebox](https://github.com/cyr-ius/hass-livebox-component) (Orange, custom) | Line rates, Wi-Fi, missed calls (clear), connected devices, reboot |
 | [SFR Box](https://www.home-assistant.io/integrations/sfr_box/) (built in) | DSL line rates, temperature, reboot |
 | [Bbox](https://www.home-assistant.io/integrations/bbox/) (Bouygues, built in, YAML) | Download / upload bandwidth |
 
