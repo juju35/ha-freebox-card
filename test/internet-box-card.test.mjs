@@ -246,3 +246,64 @@ test("the editor model dropdown lists the models of the box's operator", () => {
     ",livebox_7,livebox_6,livebox_5,livebox_4,livebox_s"
   );
 });
+
+test("temperatures are read in the sensor's unit and compared in °C", () => {
+  const { temperature, InternetBoxMiniCard } = load("internet-box-card.js", ["temperature", "InternetBoxMiniCard"]);
+  assert.deepEqual({ ...temperature(st("50", { unit_of_measurement: "°C" })) }, { raw: 50, c: 50, unit: "°C" });
+  assert.equal(temperature(st("122", { unit_of_measurement: "°F" })).c, 50);
+  assert.equal(Math.round(temperature(st("323.15", { unit_of_measurement: "K" })).c), 50);
+  assert.equal(temperature(st("45")).unit, "°C");
+  assert.equal(temperature(st("unavailable")).c, null);
+
+  // Imperial Home Assistant: 122 °F (50 °C) is neither shown as "122°C" nor flagged as critical.
+  const sfrDevices = { sfr: { id: "sfr", name: "SFR Box 8", model: "NB6VAC", config_entries: ["e"] } };
+  const sfrEntities = {
+    "sensor.s_down": { entity_id: "sensor.s_down", platform: "sfr_box", translation_key: "dsl_rate_down", device_id: "sfr" },
+    "sensor.s_temp": { entity_id: "sensor.s_temp", platform: "sfr_box", translation_key: null, device_id: "sfr" },
+  };
+  const states = {
+    "sensor.s_down": { entity_id: "sensor.s_down", ...st("50000") },
+    "sensor.s_temp": { entity_id: "sensor.s_temp", ...st("122", { device_class: "temperature", unit_of_measurement: "°F" }) },
+  };
+  const el = new InternetBoxMiniCard();
+  el._config = { box: "sfr", zoom: false };
+  el._hass = { states, entities: sfrEntities, devices: sfrDevices, language: "en", config: { time_zone: "UTC" } };
+  const mini = el._renderMini();
+  assert.match(mini, /data-key="hottest"[^>]*>.*122°F<\/span>/s);
+  assert.doesNotMatch(mini, /class="clickable crit" role="button" tabindex="0" data-key="hottest"/);
+  const full = el._system(discover(el._hass, "sfr"));
+  assert.match(full, /class="gauge clickable ok"/);
+  assert.match(full, /<b>122°<\/b>/);
+});
+
+test("the editor clears a model of another operator when the box changes, and keeps its schema", () => {
+  const { InternetBoxCardEditor } = load("internet-box-card.js", ["InternetBoxCardEditor"]);
+  const lbDevices = { ...devices, lb: { id: "lb", name: "Livebox 6", config_entries: ["lb_entry"] } };
+  const lbEntities = {
+    ...entities,
+    "sensor.lb_down": { entity_id: "sensor.lb_down", platform: "livebox", device_id: "lb", translation_key: "down_rate" },
+  };
+  const states = { ...baseStates(), "sensor.lb_down": { entity_id: "sensor.lb_down", ...st("10", { unit_of_measurement: "kB/s" }) } };
+  const hass = { states, entities: lbEntities, devices: lbDevices, language: "en" };
+  const ed = new InternetBoxCardEditor();
+  ed.appendChild = () => {};
+  const emitted = [];
+  ed.dispatchEvent = (ev) => emitted.push(ev.detail.config);
+  ed.setConfig({ model: "ultra" });
+  ed.hass = hass;
+  // No box set: the first box is selected and written to the config.
+  assert.equal(emitted.at(-1).box, "router");
+  assert.equal(emitted.at(-1).model, "ultra");
+  // Same box, a state change: the schema handed to ha-form is kept.
+  const schema = ed._form.schema;
+  ed.hass = { ...hass, states: { ...states, "light.kitchen": st("on") } };
+  assert.equal(ed._form.schema, schema);
+  // Box of another operator: the Freebox model is cleared.
+  const change = (value) => ed._form.listeners["value-changed"]({ stopPropagation() {}, detail: { value } });
+  change({ ...ed._config, box: "lb" });
+  assert.equal(emitted.at(-1).box, "lb");
+  assert.equal("model" in emitted.at(-1), false);
+  // A model of the same operator is kept.
+  change({ ...ed._config, model: "livebox_6" });
+  assert.equal(emitted.at(-1).model, "livebox_6");
+});

@@ -17,9 +17,25 @@ export const load = (file, names) => {
     HTMLElement,
     customElements: { get: (n) => registry.get(n), define: (n, c) => registry.set(n, c) },
     window: {},
-    document: { addEventListener() {}, removeEventListener() {} },
+    document: {
+      addEventListener() {},
+      removeEventListener() {},
+      // Minimal element (the editor's ha-form): records its listeners for the tests.
+      createElement: (tagName) => ({
+        tagName,
+        listeners: {},
+        addEventListener(type, fn) {
+          this.listeners[type] = fn;
+        },
+      }),
+    },
     console: { info() {}, error() {}, log() {} },
-    CustomEvent: class {},
+    CustomEvent: class {
+      constructor(type, init = {}) {
+        this.type = type;
+        this.detail = init.detail;
+      }
+    },
     Intl,
     Date,
   };
