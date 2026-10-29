@@ -1029,8 +1029,17 @@ const legacyBoxes = (hass) => {
       }
     }
   }
-  return [...seen.entries()].map(([value, label]) => ({ value, label }));
+  // Several legacy boxes of one operator (`name: Bbox`, `name: Bbox Salon`) get the prefix in their label.
+  const names = [...seen.values()];
+  return [...seen.entries()].map(([value, name]) => ({
+    value,
+    label: names.filter((n) => n === name).length > 1 ? `${name} (${value})` : name,
+  }));
 };
+
+/** True when a legacy pattern matches the entity id right after the box prefix: "sensor.bbox" must not claim
+ *  "sensor.bbox_salon_currently_used_download_bandwidth", whose suffix starts further on. */
+const legacyOwn = (re, id, prefix) => !!re && id.startsWith(prefix) && re.exec(id)?.index === prefix.length;
 
 /** List the boxes of every operator: the devices of their "download rate" sensors, plus legacy boxes from states. */
 const listBoxes = (hass) => {
@@ -1048,16 +1057,15 @@ const listBoxes = (hass) => {
 /** Fill a box from hass.states for a legacy operator (no registry, no device): only the download / upload rates. */
 const fillLegacy = (hass, box, prefix) => {
   const op = Object.values(OPERATORS).find(
-    (o) => o.legacy?.rate_down && Object.keys(hass.states).some((id) => id.startsWith(prefix) && o.legacy.rate_down.test(id))
+    (o) => o.legacy?.rate_down && Object.keys(hass.states).some((id) => legacyOwn(o.legacy.rate_down, id, prefix))
   );
   if (!op) return;
   box.id = prefix;
   box.operator = op;
   box.device = null;
   for (const id of Object.keys(hass.states).sort()) {
-    if (!id.startsWith(prefix)) continue;
-    if (op.legacy.rate_down?.test(id)) box.scalars.rate_down = id;
-    else if (op.legacy.rate_up?.test(id)) box.scalars.rate_up = id;
+    if (legacyOwn(op.legacy.rate_down, id, prefix)) box.scalars.rate_down = id;
+    else if (legacyOwn(op.legacy.rate_up, id, prefix)) box.scalars.rate_up = id;
   }
 };
 
