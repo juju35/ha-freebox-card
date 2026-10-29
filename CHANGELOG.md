@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.2 - 2026-10-29
+
+### Fixes
+- **Several Bbox (legacy integration)**: with two Bbox whose names start the same way (for example `Bbox` and `Bbox Salon`), the first card no longer shows the download and upload rates of the second box, and the visual editor lists them as "Bbox (sensor.bbox)" and "Bbox (sensor.bbox_salon)" instead of two identical "Bbox" entries.
+
 ## 2.1.1 - 2026-10-29
 
 ### Fixes
