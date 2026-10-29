@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.1 - 2026-10-29
+
+### Fixes
+- **Temperatures with the imperial unit system**: the temperature thresholds and gauges now convert the sensor value to °C first, and the mini card shows the sensor's own unit, so 122 °F is no longer shown as "122°C", in red, with a full gauge.
+- **Visual editor**: the box selected by default is now saved in the card configuration, and a box model of another operator is cleared when another box is picked; the editor no longer rebuilds its form on every Home Assistant state change.
+- **Translations**: fan speeds in the user's language (tr/min, U/min), translated fallback name for disks, "espacio libre" removed from Spanish partition names, uptime label written the same way in every language ("Uptime 3 d 4 h"), German "Tg." for days, Spanish "En línea / Fuera de línea".
+
+### Maintenance
+- CI: fork-safe screenshots workflow checkout, Chromium system dependencies installed in a time-boxed, retried step that fails explicitly after 3 attempts, Dependabot also tracks npm (Playwright).
+- Internal clean-ups: shared rate tile, no in-place sort of a cached list, unused generic brand icon removed.
+
 ## 2.1.0 - 2026-10-28
 
 ### Changes
