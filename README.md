@@ -234,6 +234,8 @@ Thresholds:
 | Disk usage | 80 % | 90 % |
 | Missed calls | 1 | — |
 
+Temperatures are shown in the unit of their sensor (°F with the imperial unit system) and compared to these thresholds after conversion to °C.
+
 ## Development
 
 ```bash
