@@ -407,7 +407,7 @@ const bboxFibreSvg = () => {
 };
 
 const svgUri = (svg) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
-// Pictures of the box models, by model id (Freebox, Livebox, SFR).
+// Pictures of the box models, by model id (Freebox, Livebox, SFR Box, Bbox).
 const IMG_BOX = {
   ultra: svgUri(ultraSvg()),
   pop: svgUri(popSvg()),
@@ -463,7 +463,7 @@ const STRINGS = {
     services: "Services",
     download: "Download",
     upload: "Upload",
-    uptime: "Uptime:",
+    uptime: "Uptime",
     firmware: "Firmware",
     devices_short: "Devices",
     wifi: "Wi-Fi",
@@ -488,6 +488,8 @@ const STRINGS = {
     hours: "h",
     days: "d",
     minutes: "min",
+    rpm: "rpm",
+    disk: "Disk",
     no_box: "No internet box found. Is a supported integration (Freebox, Livebox, SFR Box, Bbox) installed?",
     unknown_box: "Internet box not found",
     zoom_in: "Show the full card",
@@ -545,6 +547,8 @@ const STRINGS = {
     hours: "h",
     days: "j",
     minutes: "min",
+    rpm: "tr/min",
+    disk: "Disque",
     no_box: "Aucune box internet trouvée. Une intégration compatible (Freebox, Livebox, SFR Box, Bbox) est-elle installée ?",
     unknown_box: "Box internet introuvable",
     zoom_in: "Afficher la carte complète",
@@ -576,7 +580,7 @@ const STRINGS = {
     services: "Dienste",
     download: "Download",
     upload: "Upload",
-    uptime: "Betriebszeit:",
+    uptime: "Betriebszeit",
     firmware: "Firmware",
     devices_short: "Geräte",
     wifi: "WLAN",
@@ -599,8 +603,10 @@ const STRINGS = {
     online: "Verbunden",
     offline: "Getrennt",
     hours: "h",
-    days: "T",
+    days: "Tg.",
     minutes: "Min.",
+    rpm: "U/min",
+    disk: "Datenträger",
     no_box: "Keine Internetbox gefunden. Ist eine unterstützte Integration (Freebox, Livebox, SFR Box, Bbox) installiert?",
     unknown_box: "Internetbox nicht gefunden",
     zoom_in: "Vollständige Karte anzeigen",
@@ -632,7 +638,7 @@ const STRINGS = {
     services: "Servicios",
     download: "Descarga",
     upload: "Subida",
-    uptime: "Tiempo activo:",
+    uptime: "Tiempo activo",
     firmware: "Firmware",
     devices_short: "Dispositivos",
     wifi: "Wi-Fi",
@@ -653,10 +659,12 @@ const STRINGS = {
     raid_ok: "OK",
     raid_degraded: "Degradado",
     online: "En línea",
-    offline: "Desconectado",
+    offline: "Fuera de línea",
     hours: "h",
     days: "d",
     minutes: "min",
+    rpm: "rpm",
+    disk: "Disco",
     no_box: "No se ha encontrado ningún router de internet. ¿Hay instalada una integración compatible (Freebox, Livebox, SFR Box, Bbox)?",
     unknown_box: "Router de internet no encontrado",
     zoom_in: "Mostrar la tarjeta completa",
@@ -704,7 +712,7 @@ const MODELS = [
 // the card's data slots to that integration's entity translation keys (`keys`), or to entity-id patterns for a
 // legacy integration without translation keys (`legacy`), and carries the branding (name, accent colour, URLs,
 // logo and model pictures). Freebox is the reference; the others are discovered the same way from their own keys.
-// Model pictures are added per operator; until then a brand has `models: []` and shows no picture.
+// The box picture comes from the matched model; a box whose model is unknown (and no `model` option) shows none.
 const OPERATORS = {
   freebox: {
     platform: "freebox", name: "Freebox", color: "#cd1e25", logo: IMG_LOGO,
@@ -848,6 +856,19 @@ const uptimeSec = (tracker, timeZone) => {
   if (!raw) return null;
   const ms = parseDate(raw, timeZone);
   return Number.isFinite(ms) ? Math.max(0, (Date.now() - ms) / 1000) : null;
+};
+
+/**
+ * Temperature sensor value: `raw` in the sensor's own unit (Home Assistant converts temperature sensors to the
+ * user's unit system), `c` the same value in °C for the thresholds and the gauge, `unit` the unit to display.
+ */
+const temperature = (s) => {
+  const raw = num(s);
+  const unit = s?.attributes?.unit_of_measurement || "°C";
+  if (raw === null) return { raw, c: null, unit };
+  const u = unit.replace(/^°/, "").toUpperCase();
+  const c = u === "F" ? ((raw - 32) * 5) / 9 : u === "K" ? raw - 273.15 : raw;
+  return { raw, c, unit };
 };
 
 const level = (v, warn, crit) => (v === null ? "" : v >= crit ? "crit" : v >= warn ? "warn" : "ok");
@@ -1061,7 +1082,7 @@ const discover = (hass, boxId) => {
   if (hit && hit.devices === hass.devices && hit.stamp === stamp) return hit.box;
 
   const box = emptyBox();
-  const entries = found.sort((a, b) => a.entity_id.localeCompare(b.entity_id));
+  const entries = [...found].sort((a, b) => a.entity_id.localeCompare(b.entity_id));
   const routers = listBoxes(hass).map((b) => b.value);
   const router = boxId ? (routers.includes(boxId) ? boxId : null) : routers[0];
   const dev = router ? hass.devices?.[router] : null;
@@ -1148,10 +1169,10 @@ const boxModel = (box, config) => {
 };
 
 /** Label of a partition: its friendly name without the device name and the "free space" words. */
-const partitionLabel = (hass, p) =>
+const partitionLabel = (hass, p, fallback = "Disk") =>
   shortName(hass, p.id, p.device)
-    .replace(/\s*(free space|espace libre( de| sur)?|freier speicher)\s*/gi, " ")
-    .trim() || deviceName(p.device) || "Disk";
+    .replace(/\s*(free space|espace libre( de| sur)?|freier speicher|espacio libre( de| en)?)\s*/gi, " ")
+    .trim() || deviceName(p.device) || fallback;
 
 // ---------------------------------------------------------------------------
 // Shared styles
@@ -1181,10 +1202,6 @@ const BASE_STYLE = `
   .logo-link { display: flex; align-items: center; justify-content: center; flex: none; align-self: flex-start; width: 40px; height: 40px; border-radius: 10px;
                background: #fff; box-shadow: inset 0 0 0 1px var(--divider-color, rgba(0,0,0,.12)); }
   .logo { display: block; width: 34px; height: auto; }
-  /* Generic tinted box icon for operators without a brand logo. */
-  .brand-icon { display: flex; align-items: center; justify-content: center; flex: none; align-self: flex-start; width: 40px; height: 40px; border-radius: 50%;
-                background: color-mix(in srgb, var(--ibc-red) 15%, transparent); color: var(--ibc-red); }
-  .brand-icon .icon { width: 22px; height: 22px; }
   .name { font-size: 16px; font-weight: 500; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .sub { font-size: 12px; color: var(--secondary-text-color); overflow: hidden; }
   /* Device name and firmware on one line when they fit, else one per line: the "·" separator that starts a line
@@ -1396,6 +1413,13 @@ class InternetBoxBase extends HTMLElement {
     return uptimeSec(router, this._hass.config?.time_zone);
   }
 
+  // Download / upload rate tile, shared by the full and the mini card.
+  _rateTile(id, cls, icon, k) {
+    return `<div class="tile clickable ${cls}" role="button" tabindex="0" data-entity="${id || ""}">${svgIcon(icon)}<div><div class="k">${k}</div><div class="v">${this._rate(
+      id
+    )}</div></div></div>`;
+  }
+
   // What the render depends on: registries, language, the states of the box entities and the
   // minute, for the uptime shown in days, hours and minutes.
   _signature() {
@@ -1466,11 +1490,10 @@ class InternetBoxBase extends HTMLElement {
     const name = c.title || model?.name || devName || op.name;
     const adminUrl = /^https?:\/\//i.test(c.admin_url || "") ? c.admin_url : op.admin;
     const sub = [devName && devName !== name ? devName : null, firmware ? `${this._t("firmware")} ${firmware}` : null].filter(Boolean);
-    // The brand logo when the operator has one (Freebox), else a tinted generic box icon.
-    const brand =
-      op.logo
-        ? `<a class="logo-link" href="${esc(op.website)}" target="_blank" rel="noopener noreferrer" title="${esc(op.name)}"><img class="logo" src="${op.logo}" alt="${esc(op.name)}"></a>`
-        : `<a class="brand-icon" href="${esc(op.website)}" target="_blank" rel="noopener noreferrer" title="${esc(op.name)}">${svgIcon(ICONS.network)}</a>`;
+    // The operator logo (every supported operator has one), opening its website.
+    const brand = op.logo
+      ? `<a class="logo-link" href="${esc(op.website)}" target="_blank" rel="noopener noreferrer" title="${esc(op.name)}"><img class="logo" src="${op.logo}" alt="${esc(op.name)}"></a>`
+      : "";
     // The box picture only when the operator has a matching model drawing.
     const boxImg = model && IMG_BOX[model.id] ? IMG_BOX[model.id] : null;
     return `
@@ -1612,10 +1635,6 @@ class InternetBoxCard extends InternetBoxBase {
   _network(box) {
     const sc = box.scalars;
     if (!sc.rate_down && !sc.rate_up) return "";
-    const tile = (id, cls, icon, k) =>
-      `<div class="tile clickable ${cls}" role="button" tabindex="0" data-entity="${id || ""}">${svgIcon(icon)}<div><div class="k">${k}</div><div class="v">${this._rate(
-        id
-      )}</div></div></div>`;
     const router = this._s(sc.router);
     const facts = [];
     if (router?.attributes?.IPv4)
@@ -1636,8 +1655,8 @@ class InternetBoxCard extends InternetBoxBase {
     return `<div>
       <div class="section-title">${svgIcon(ICONS.network)}${this._t("network")}</div>
       <div class="grid2">
-        ${tile(sc.rate_down, "down", ICONS.down, this._t("download"))}
-        ${tile(sc.rate_up, "up", ICONS.up, this._t("upload"))}
+        ${this._rateTile(sc.rate_down, "down", ICONS.down, this._t("download"))}
+        ${this._rateTile(sc.rate_up, "up", ICONS.up, this._t("upload"))}
       </div>
       ${facts.length ? `<div class="facts">${facts.join("")}</div>` : ""}
     </div>`;
@@ -1653,10 +1672,11 @@ class InternetBoxCard extends InternetBoxBase {
       })
       .sort((a, b) => a.label.localeCompare(b.label, undefined, { numeric: true }));
     const gauges = temps.map(({ id, name, label }) => {
-      const v = num(this._s(id));
-      return `<div class="gauge clickable ${level(v, 75, 90)}" role="button" tabindex="0" data-key="${id}" data-entity="${id}" title="${esc(name)}">
-        ${ring(v)}
-        <div class="val"><b>${v === null ? "—" : `${Math.round(v)}°`}</b></div>
+      // Thresholds and gauge (0-100) in °C, whatever unit the sensor reports; the value in its own unit.
+      const { raw, c } = temperature(this._s(id));
+      return `<div class="gauge clickable ${level(c, 75, 90)}" role="button" tabindex="0" data-key="${id}" data-entity="${id}" title="${esc(name)}">
+        ${ring(c)}
+        <div class="val"><b>${raw === null ? "—" : `${Math.round(raw)}°`}</b></div>
         <div class="lbl">${esc(label)}</div>
       </div>`;
     });
@@ -1664,7 +1684,7 @@ class InternetBoxCard extends InternetBoxBase {
       const rpm = num(this._s(id));
       return `<div class="tile clickable" role="button" tabindex="0" data-key="${id}" data-entity="${id}">${svgIcon(ICONS.fan, rpm ? "spin" : "")}<div><div class="k">${esc(
         name
-      )}</div><div class="v">${rpm === null ? "—" : `${Math.round(rpm)} rpm`}</div></div></div>`;
+      )}</div><div class="v">${rpm === null ? "—" : `${Math.round(rpm)} ${this._t("rpm")}`}</div></div></div>`;
     });
     return `<div>
       <div class="section-title">${svgIcon(ICONS.temp)}${this._t("system")}</div>
@@ -1679,7 +1699,7 @@ class InternetBoxCard extends InternetBoxBase {
       const used = free === null ? null : Math.max(0, Math.min(100, 100 - free));
       const cls = level(used, 80, 90);
       return `<div class="part clickable ${cls}" role="button" tabindex="0" data-key="${p.id}" data-entity="${p.id}">
-        <div class="row"><span class="dot ${cls || "ok"}"></span><span class="grow">${esc(partitionLabel(this._hass, p))}</span>
+        <div class="row"><span class="dot ${cls || "ok"}"></span><span class="grow">${esc(partitionLabel(this._hass, p, this._t("disk")))}</span>
           <span class="muted">${esc(p.device?.model || "")}</span></div>
         <div class="bar"><div style="width:${used ?? 0}%"></div></div>
         <div class="detail"><span>${used === null ? "—" : `${used.toFixed(0)}% ${this._t("used")}`}</span>
@@ -1735,8 +1755,6 @@ class InternetBoxCard extends InternetBoxBase {
 const MINI_STYLE = `
   .logo-link { width: 32px; height: 32px; border-radius: 8px; }
   .logo { width: 26px; }
-  .brand-icon { width: 32px; height: 32px; }
-  .brand-icon .icon { width: 18px; height: 18px; }
   .box-link { max-width: 35%; }
   .box { height: 44px; }
   .name { font-size: 16px; }
@@ -1819,11 +1837,7 @@ class InternetBoxMiniCard extends InternetBoxCard {
     const sc = box.scalars;
     const parts = [];
     if (c.show_network !== false && (sc.rate_down || sc.rate_up)) {
-      const tile = (id, cls, icon, k) =>
-        `<div class="tile clickable ${cls}" role="button" tabindex="0" data-entity="${id || ""}">${svgIcon(icon)}<div><div class="k">${k}</div><div class="v">${this._rate(
-          id
-        )}</div></div></div>`;
-      parts.push(`<div class="grid2">${tile(sc.rate_down, "down", ICONS.down, this._t("download"))}${tile(
+      parts.push(`<div class="grid2">${this._rateTile(sc.rate_down, "down", ICONS.down, this._t("download"))}${this._rateTile(
         sc.rate_up,
         "up",
         ICONS.up,
@@ -1841,13 +1855,13 @@ class InternetBoxMiniCard extends InternetBoxCard {
     if (c.show_system !== false && box.temps.length) {
       let hottest = null;
       for (const tmp of box.temps) {
-        const v = num(this._s(tmp.id));
-        if (v !== null && (!hottest || v > hottest.v)) hottest = { v, id: tmp.id };
+        const v = temperature(this._s(tmp.id));
+        if (v.c !== null && (!hottest || v.c > hottest.c)) hottest = { ...v, id: tmp.id };
       }
       if (hottest)
-        foot.push(`<span class="clickable ${level(hottest.v, 75, 90)}" role="button" tabindex="0" data-key="hottest" data-entity="${hottest.id}">${svgIcon(ICONS.temp)}${Math.round(
-          hottest.v
-        )}°C</span>`);
+        foot.push(`<span class="clickable ${level(hottest.c, 75, 90)}" role="button" tabindex="0" data-key="hottest" data-entity="${hottest.id}">${svgIcon(ICONS.temp)}${Math.round(
+          hottest.raw
+        )}${esc(hottest.unit)}</span>`);
     }
     const wifi = this._s(sc.wifi);
     if (wifi)
@@ -1969,6 +1983,12 @@ class InternetBoxEditorBase extends HTMLElement {
       this._form.addEventListener("value-changed", (ev) => {
         ev.stopPropagation();
         const config = { ...ev.detail.value };
+        // Another box of another operator: a model picked for the former one is not among the new operator's
+        // models (and would be silently ignored), so it is cleared.
+        if (config.box !== this._config.box && config.model) {
+          const models = discover(this._hass, config.box).operator?.models ?? MODELS;
+          if (!models.some((m) => m.id === config.model)) delete config.model;
+        }
         for (const [k, v] of Object.entries(config)) {
           // Keep the YAML minimal: drop empty values and options left at their default.
           if (v === "" || v === undefined || v === null || ((k.startsWith("show_") || k === "zoom") && v === true) || (k === "rate_unit" && v === "bytes"))
@@ -1979,12 +1999,26 @@ class InternetBoxEditorBase extends HTMLElement {
       });
       this.appendChild(this._form);
     }
+    // No box set: the card shows the first one found, so the editor selects it and writes it to the config.
+    if (!this._config.box) {
+      const first = listBoxes(this._hass)[0]?.value;
+      if (first) {
+        this._config = { ...this._config, box: first };
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: this._config }, bubbles: true, composed: true }));
+      }
+    }
     const data = { rate_unit: "bytes", model: "", ...this._config };
     for (const name of ["show_image", "show_logo", ...this.constructor.toggles]) if (data[name] === undefined) data[name] = true;
-    if (!data.box && this._hass) data.box = listBoxes(this._hass)[0]?.value;
     this._form.hass = this._hass;
     this._form.data = data;
-    this._form.schema = this._schema();
+    // The schema is rebuilt on every hass update (every state change) but only handed to the form when its
+    // options (boxes, models, detected model, language) changed, so ha-form does not re-render for nothing.
+    const schema = this._schema();
+    const key = JSON.stringify(schema);
+    if (key !== this._schemaKey) {
+      this._schemaKey = key;
+      this._form.schema = schema;
+    }
   }
 }
 
