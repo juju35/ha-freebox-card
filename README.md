@@ -198,7 +198,9 @@ The Bbox integration exposes no device model: set the picture with the `model` o
 
 While the box is running, the card animates: the cooling fan spins at its live speed. It settles to a still card when it stops (and honours `prefers-reduced-motion`).
 
-![fan](screenshots/fan.gif)
+| Light | Dark |
+|---|---|
+| ![fan](screenshots/fan.gif) | ![fan, dark theme](screenshots/fan-dark.gif) |
 
 ### Operators
 
@@ -242,7 +244,7 @@ Temperatures are shown in the unit of their sensor (°F with the imperial unit s
 npm install
 npm run build        # bundles src/internet-box-card.js + the embedded logos (images/*.svg) into dist/internet-box-card.js
 npm run check        # builds and checks the card (run in CI)
-npm run screenshots  # renders the cards with mock data (scripts/mock-states.mjs, scripts/mock-operators.mjs) into screenshots/ (and fan.gif, needs ffmpeg)
+npm run screenshots  # renders the cards with mock data (scripts/mock-states.mjs, scripts/mock-operators.mjs) into screenshots/ (and fan.gif / fan-dark.gif, needs ffmpeg)
 ```
 
 `dist/` is not committed: `npm run build` creates it locally, CI builds it on every push, and the release workflow attaches the built file to the release, which is where HACS downloads it from.
